@@ -17,12 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -172,7 +172,7 @@ fun SettingsScreen(
                         text = stringResource(if (isSyncingSteamTime) R.string.settings_steam_time_action_loading else R.string.settings_modern_sync_now),
                         onClick = onSyncSteamTime,
                         enabled = !isSyncingSteamTime,
-                        leadingIcon = Icons.Default.Sync
+                        leadingIcon = Icons.Default.Refresh
                     )
                 }
             }
@@ -196,12 +196,12 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_cloud_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.Sync,
+                    icon = Icons.Default.Info,
                     label = stringResource(R.string.settings_modern_cloud_status),
                     onClick = onOpenCloudBackupStatus
                 )
                 SettingsActionRow(
-                    icon = Icons.Default.Cloud,
+                    icon = Icons.Default.Settings,
                     label = stringResource(R.string.settings_modern_cloud_config),
                     onClick = onOpenCloudBackupConfig
                 )
