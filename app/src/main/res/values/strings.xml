@@ -334,7 +334,7 @@
     <string name="steam_session_import_repair_next_step">下一步：在下方“手动录入 / 更新会话”中补齐 session_id / cookies / oauth，并执行一次会话校验。</string>
     <string name="steam_session_prerequisites_title">前置条件</string>
     <string name="steam_session_prerequisites_description">会话验证、确认列表和批准 / 拒绝操作会依赖 identity_secret、device_id、token_gid 和已同步的 Steam 时间。</string>
-    <string name="steam_session_identity_missing">identity_secret：缺失，后续无法生成确认签名。</string>
+    <string name="steam_session_identity_missing">安全凭据已过期或为旧版本，请重新登录以更新凭据。</string>
     <string name="steam_session_identity_present">identity_secret：已保存，可用于后续确认签名。</string>
     <string name="steam_session_device_id_missing">device_id：缺失，后续移动确认请求可能无法完整构建。</string>
     <string name="steam_session_device_id_present">device_id：已保存。</string>

@@ -74,7 +74,7 @@ fun ImportTokenScreen(
     ) {
         item {
             Text(
-                text = "Add Authenticator",
+                text = stringResource(R.string.route_title_steam_add_authenticator),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
             )

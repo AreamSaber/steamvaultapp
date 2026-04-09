@@ -168,7 +168,7 @@ fun SteamConfirmationsScreen(
                     item {
                         ScreenSectionCard(
                             title = stringResource(R.string.steam_session_time_not_synced),
-                            description = "Time synchronization is required to approve confirmations.",
+                            description = stringResource(R.string.steam_session_identity_missing),
                         ) {
                             Button(
                                 onClick = onSyncSteamTime,

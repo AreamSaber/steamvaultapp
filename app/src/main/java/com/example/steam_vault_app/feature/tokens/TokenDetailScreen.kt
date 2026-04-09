@@ -237,7 +237,7 @@ fun TokenDetailScreen(
                                 )
                                 if (!snapshotItem.hasProtocolSession) {
                                     Text(
-                                        text = "This authenticator uses legacy web sessions. Please login via protocol to upgrade.",
+                                        text = stringResource(R.string.steam_session_identity_missing),
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.error,
                                     )
