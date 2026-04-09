@@ -729,7 +729,5 @@
     <string name="steam_session_protocol_repair_cancelled">Steam 会话恢复已取消�</string>
     <string name="steam_session_mafile_repair_missing_session_sda">这份 maFile 里没有可恢复�?Session。像 SDA 一样，这种情况只能重新登录 Steam 拿新�?Session，不能从当前文件里直接补出来�</string>
     <string name="steam_confirmation_session_repair_hint_sda">如果 %1$s 这个令牌只缺 Steam 会话?Cookie，请先打开“Steam 会话”页走“SDA 风格重新登录补会话”；只有原始 maFile 里确实带?Session 时，才适合再用 maFile 修复</string>
-    <string name="token_list_modern_empty_secondary">我有密钥，直接导入</string>
     <string name="token_list_modern_account_label">账户</string>
-    <string name="token_list_modern_seconds_left">本轮剩余 %1$d 秒</string>
 </resources>
