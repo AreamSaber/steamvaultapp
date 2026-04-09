@@ -1,0 +1,39 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.ace-tool/
+
+# Local IDE / tooling state
+/.idea/
+/.kotlin/
+/.tooling/
+/.android-local/
+/.android-user/
+/.android-user-home/
+/.gradle-local/
+/.gradle-user/
+/.gradle-user-home/
+
+# Local reference repositories used for research only
+/SteamDesktopAuthenticator-master/
+/SteamKit-master/
+
+# Sensitive local exports / imports
+/steam-vault-backup-*.json
+/test_backup.json
+*.maFile
+*.mafile
+*.jks
+*.keystore

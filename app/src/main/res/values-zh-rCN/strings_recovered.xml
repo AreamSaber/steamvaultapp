@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="biometric_unlock_prompt_title">生物识别解锁</string>
+    <string name="cloud_backup_auto_reason_security_settings_changed">安全设置发生变化</string>
+    <string name="common_action_cancel">取消</string>
+    <string name="label_confirm_new_password">确认新主密码</string>
+    <string name="label_confirm_password">确认密码</string>
+    <string name="label_new_master_password">新主密码</string>
+    <string name="steam_session_detail_created_at">创建时间</string>
+    <string name="steam_session_detail_updated_at">更新时间</string>
+    <string name="steam_session_last_validated_none">尚未验证</string>
+    <string name="steam_session_validation_status_error">验证失败</string>
+    <string name="steam_session_validation_status_success">验证成功</string>
+    <string name="steam_session_validation_status_unknown">尚未验证</string>
+    <string name="steam_session_web_login_current_stage">当前浏览器阶段：%1$s</string>
+    <string name="steam_session_web_login_journey_state_manual_required">需手动完成</string>
+    <string name="steam_session_web_login_journey_state_pending_result">等待结果</string>
+    <string name="steam_session_web_login_next_action">建议下一步：%1$s</string>
+    <string name="steam_session_web_login_next_action_complete_challenge">在当前浏览器页面里完成额外验证或人机验证</string>
+    <string name="steam_session_web_login_next_action_enter_credentials">输入 Steam 账号名和密码，并尝试提交登录</string>
+    <string name="steam_session_web_login_next_action_enter_email_code">输入邮箱验证码，继续完成登录</string>
+    <string name="steam_session_web_login_next_action_enter_two_factor">输入 Steam Guard / 手机令牌验证码，继续完成登录</string>
+    <string name="steam_session_web_login_next_action_session_ready">已经拿到可用会话，应用会尝试自动保存</string>
+    <string name="steam_session_web_login_stage_additional_challenge">额外验证 / 人机校验</string>
+    <string name="steam_session_web_login_stage_credentials">账号密码输入</string>
+    <string name="steam_session_web_login_stage_session_ready">已拿到可保存会话</string>
+    <string name="steam_session_web_login_stage_unknown">状态未识别</string>
+    <string name="steam_session_web_login_transaction_event_email_submitted">已提交邮箱验证码</string>
+    <string name="steam_session_web_login_transaction_event_session_saved">会话已成功保存到本地加密仓储</string>
+    <string name="steam_session_web_login_transaction_history_timeline">时间线：%1$s</string>
+    <string name="steam_session_web_login_transaction_history_timeline_empty">时间线：没有可展示的事务事件</string>
+    <string name="steam_session_web_login_transaction_result">最近一次终态：%1$s</string>
+    <string name="steam_session_web_login_transaction_result_failure">Steam 明确返回失败</string>
+    <string name="steam_session_web_login_transaction_result_session_captured">已抓到会话，等待写入本地</string>
+    <string name="steam_session_web_login_transaction_result_session_save_failed">会话写入本地失败</string>
+    <string name="steam_session_web_login_transaction_state">当前事务状态：%1$s</string>
+    <string name="steam_session_web_login_transaction_state_session_captured">已抓到会话，等待保存</string>
+    <string name="steam_session_web_login_transaction_state_waiting_result">等待 Steam 返回结果</string>
+</resources>
