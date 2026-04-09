@@ -95,8 +95,8 @@ fun BackupExportScreen(
         item {
             VaultPageHeader(
                 eyebrow = stringResource(R.string.vault_brand_label),
-                title = stringResource(R.string.backup_export_modern_title),
-                subtitle = stringResource(R.string.backup_export_modern_body),
+                title = stringResource(R.string.backup_export_title),
+                subtitle = stringResource(R.string.backup_export_description),
             )
         }
         statusMessage?.let { message ->
@@ -117,20 +117,20 @@ fun BackupExportScreen(
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.backup_export_modern_card_title),
-                description = stringResource(R.string.backup_export_modern_card_body),
+                title = stringResource(R.string.backup_export_caution_title),
+                description = stringResource(R.string.backup_export_caution_body),
             ) {
                 Text(
-                    text = stringResource(R.string.backup_export_modern_caution),
+                    text = stringResource(R.string.backup_export_caution_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 VaultPrimaryButton(
                     text = stringResource(
                         if (isWorking) {
-                            R.string.backup_export_modern_action_loading
+                            R.string.backup_export_action_loading
                         } else {
-                            R.string.backup_export_modern_action
+                            R.string.backup_export_action
                         },
                     ),
                     onClick = {

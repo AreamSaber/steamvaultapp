@@ -46,25 +46,25 @@ fun ChangePasswordScreen(
         item {
             VaultPageHeader(
                 eyebrow = stringResource(R.string.vault_brand_label),
-                title = stringResource(R.string.change_password_title),
-                subtitle = stringResource(R.string.change_password_description),
+                title = stringResource(R.string.change_password_modern_title),
+                subtitle = stringResource(R.string.change_password_modern_body),
             )
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.change_password_requirements_title),
-                description = stringResource(R.string.change_password_requirements_description),
+                title = stringResource(R.string.create_password_modern_rule_title),
+                description = stringResource(R.string.create_password_modern_rule_body),
             ) {
                 ChecklistRow(
-                    label = stringResource(R.string.create_password_requirement_length),
+                    label = stringResource(R.string.create_password_modern_rule_length),
                     highlighted = hasLength,
                 )
                 ChecklistRow(
-                    label = stringResource(R.string.create_password_requirement_mixed),
+                    label = stringResource(R.string.create_password_modern_rule_mix),
                     highlighted = hasMixedInput,
                 )
                 ChecklistRow(
-                    label = stringResource(R.string.create_password_requirement_match),
+                    label = stringResource(R.string.create_password_modern_rule_match),
                     highlighted = matches,
                 )
                 ChecklistRow(
@@ -83,13 +83,13 @@ fun ChangePasswordScreen(
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.change_password_title),
-                description = stringResource(R.string.change_password_description),
+                title = stringResource(R.string.change_password_modern_title),
+                description = stringResource(R.string.change_password_modern_body),
             ) {
                 VaultTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = stringResource(R.string.label_new_master_password),
+                    label = stringResource(R.string.change_password_modern_field_new),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
@@ -100,7 +100,7 @@ fun ChangePasswordScreen(
                 VaultTextField(
                     value = confirmation,
                     onValueChange = { confirmation = it },
-                    label = stringResource(R.string.label_confirm_new_password),
+                    label = stringResource(R.string.change_password_modern_field_confirm),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
@@ -111,9 +111,9 @@ fun ChangePasswordScreen(
                 VaultPrimaryButton(
                     text = stringResource(
                         if (isSubmitting) {
-                            R.string.change_password_action_loading
+                            R.string.create_password_modern_action_loading
                         } else {
-                            R.string.change_password_action_idle
+                            R.string.change_password_modern_action
                         },
                     ),
                     onClick = { onPasswordChanged(password) },

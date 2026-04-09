@@ -1,4 +1,11 @@
-package com.example.steam_vault_app.feature.settings
+import re
+
+file_path = "app/src/main/java/com/example/steam_vault_app/feature/settings/SettingsScreen.kt"
+with open(file_path, "r") as f:
+    content = f.read()
+
+# I will rewrite SettingsScreen.kt to match the new UI list item design
+new_code = """package com.example.steam_vault_app.feature.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -353,3 +360,7 @@ private fun formatOffsetSeconds(
         else -> context.getString(R.string.common_offset_zero)
     }
 }
+"""
+
+with open(file_path, "w") as f:
+    f.write(new_code)

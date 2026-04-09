@@ -1,4 +1,13 @@
-package com.example.steam_vault_app.feature.unlock
+import os
+
+file_path = "app/src/main/java/com/example/steam_vault_app/feature/unlock/UnlockScreen.kt"
+
+# Read original
+with open(file_path, "r") as f:
+    content = f.read()
+
+# I will write the UnlockScreen using the new design.
+new_code = """package com.example.steam_vault_app.feature.unlock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -190,3 +199,7 @@ fun UnlockScreen(
         }
     }
 }
+"""
+
+with open(file_path, "w") as f:
+    f.write(new_code)
