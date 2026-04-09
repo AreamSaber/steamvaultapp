@@ -5,16 +5,16 @@
     <string name="route_title_steam_authenticator_binding">Binding Prep</string>
     <string name="route_short_steam_authenticator_binding">Bind</string>
 
-    <string name="import_login_path_title">Recommended Path</string>
-    <string name="import_login_path_description">Sign in with the Steam protocol flow first, then continue directly into authenticator binding without relying on browser-collected session material.</string>
+    <string name="import_login_path_title">Steam Login (Recommended)</string>
+    <string name="import_login_path_description">Sign in directly to add a new Steam Guard Mobile Authenticator.</string>
     <string name="import_login_path_check_sign_in">Use protocol login with your Steam username and password</string>
     <string name="import_login_path_check_verify">Complete email, device code, or device confirmation challenges in-app</string>
     <string name="import_login_path_check_bind_authenticator">Continue directly into authenticator binding with the structured mobile session</string>
     <string name="import_login_path_action">Sign In and Add Authenticator</string>
     <string name="import_login_path_browser_fallback_action">Fallback: Browser Login (Legacy)</string>
-    <string name="import_fallback_title">Compatibility Import</string>
-    <string name="import_fallback_description">If you already have shared_secret, JSON, or an otpauth URI, you can still import it directly.</string>
-    <string name="import_fallback_note">This path stays available for migration and compatibility, but it is no longer the primary onboarding flow.</string>
+    <string name="import_fallback_title">Manual Import</string>
+    <string name="import_fallback_description">Import an existing authenticator from a maFile, JSON, or URI.</string>
+    <string name="import_fallback_note">Use this option if you already have the authenticator secrets.</string>
     <string name="import_existing_authenticator_title">This Account Already Has a Mobile Authenticator</string>
     <string name="import_existing_authenticator_description">Steam refused to add another mobile authenticator to this account. If you still have the existing authenticator material, import it here instead of trying to create a second one.</string>
     <string name="import_existing_authenticator_account_name">Suggested account label: %1$s</string>
@@ -34,18 +34,18 @@
     <string name="token_list_empty_check_login">Start by signing in with the Steam protocol flow and binding a new mobile authenticator.</string>
     <string name="token_list_empty_check_import">If you already have shared_secret, JSON, or an otpauth URI, you can import it directly.</string>
 
-    <string name="steam_add_authenticator_title">Add Authenticator via Steam Sign-In</string>
+    <string name="steam_add_authenticator_title">Sign In with Steam</string>
     <string name="steam_add_authenticator_overview_title">Flow Overview</string>
-    <string name="steam_add_authenticator_overview_description">This entry point is only for adding a new authenticator. The primary path signs in through the Steam protocol flow. Browser and manual draft capture remain available only as a compatibility fallback.</string>
+    <string name="steam_add_authenticator_overview_description">Follow the steps to add a new authenticator.</string>
     <string name="steam_add_authenticator_step_sign_in">1. Sign in with the Steam protocol login flow</string>
     <string name="steam_add_authenticator_step_verify">2. Complete any email, device code, or device confirmation challenge</string>
     <string name="steam_add_authenticator_step_bind">3. Continue into mobile authenticator binding</string>
     <string name="steam_add_authenticator_step_complete">4. Write the result directly into the token vault</string>
-    <string name="steam_add_authenticator_protocol_title">Primary Path: Steam Protocol Login</string>
-    <string name="steam_add_authenticator_protocol_description">This path signs in like SDA/SteamKit, produces a structured mobile session with SteamID, access token, refresh token, and mobile cookies, then hands that session directly to the binding flow.</string>
+    <string name="steam_add_authenticator_protocol_title">Steam Account</string>
+    <string name="steam_add_authenticator_protocol_description">Enter your Steam credentials to continue.</string>
     <string name="steam_add_authenticator_protocol_username_label">Steam account name</string>
     <string name="steam_add_authenticator_protocol_password_label">Steam password</string>
-    <string name="steam_add_authenticator_protocol_note">Use this as the default add-authenticator flow. The browser and manual draft sections below are only for fallback, compatibility, and debugging.</string>
+    <string name="steam_add_authenticator_protocol_note">Your credentials are only sent to official Steam servers.</string>
     <string name="steam_add_authenticator_protocol_qr_note">QR login does not bind you to a prefilled account. Scan it in the Steam mobile app and choose whichever signed-in account you want to continue with there.</string>
     <string name="steam_add_authenticator_protocol_missing_credentials">Enter your Steam account name and password first.</string>
     <string name="steam_add_authenticator_protocol_started">Starting Steam protocol login...</string>

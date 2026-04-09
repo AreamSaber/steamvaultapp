@@ -2,12 +2,18 @@ package com.example.steam_vault_app.feature.importtoken
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -20,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -36,7 +43,6 @@ import com.example.steam_vault_app.domain.model.SteamProtocolLoginRequest
 import com.example.steam_vault_app.domain.repository.SteamAuthenticatorBindingContextRepository
 import com.example.steam_vault_app.domain.repository.SteamAuthenticatorEnrollmentDraftRepository
 import com.example.steam_vault_app.feature.importtoken.SteamQrCodeBitmapGenerator
-import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
 import java.time.Instant
 import kotlin.coroutines.coroutineContext
@@ -224,8 +230,8 @@ fun SteamProtocolLoginScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
             Text(
@@ -234,166 +240,147 @@ fun SteamProtocolLoginScreen(
                 color = MaterialTheme.colorScheme.onBackground,
             )
         }
+        
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.steam_add_authenticator_overview_title),
-                description = stringResource(R.string.steam_add_authenticator_overview_description),
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                ChecklistRow(
-                    label = stringResource(R.string.steam_add_authenticator_step_sign_in),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.steam_add_authenticator_step_verify),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.steam_add_authenticator_step_bind),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.steam_add_authenticator_step_complete),
-                    highlighted = true,
-                )
-            }
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.steam_add_authenticator_protocol_title),
-                description = stringResource(R.string.steam_add_authenticator_protocol_description),
-            ) {
-                protocolStatusMessage?.let { message ->
+                Column(modifier = Modifier.padding(20.dp)) {
                     Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-                protocolErrorMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                OutlinedTextField(
-                    value = usernameInput,
-                    onValueChange = { usernameInput = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.steam_add_authenticator_protocol_username_label)) },
-                    enabled = !isProtocolLoggingIn,
-                    singleLine = true,
-                )
-                OutlinedTextField(
-                    value = passwordInput,
-                    onValueChange = { passwordInput = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.steam_add_authenticator_protocol_password_label)) },
-                    enabled = !isProtocolLoggingIn,
-                    singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                )
-                Text(
-                    text = stringResource(R.string.steam_add_authenticator_protocol_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = stringResource(R.string.steam_add_authenticator_protocol_qr_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                Button(
-                    onClick = { startProtocolLogin(SteamProtocolLoginMode.INITIAL) },
-                    enabled = !isProtocolLoggingIn,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isProtocolLoggingIn) {
-                                R.string.steam_add_authenticator_protocol_action_loading
-                            } else {
-                                R.string.steam_add_authenticator_protocol_action
-                            },
-                        ),
-                    )
-                }
-                OutlinedButton(
-                    onClick = { startProtocolLogin(SteamProtocolLoginMode.QR_CODE) },
-                    enabled = !isProtocolLoggingIn,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isProtocolLoggingIn && activeQrChallenge != null) {
-                                R.string.steam_add_authenticator_protocol_qr_action_loading
-                            } else {
-                                R.string.steam_add_authenticator_protocol_qr_action
-                            },
-                        ),
-                    )
-                }
-            }
-        }
-        activeQrChallenge?.let { qrChallenge ->
-            item {
-                ScreenSectionCard(
-                    title = stringResource(R.string.steam_add_authenticator_protocol_qr_preview_title),
-                    description = stringResource(
-                        R.string.steam_add_authenticator_protocol_qr_preview_description,
-                    ),
-                ) {
-                    val qrBitmap = remember(qrChallenge.challengeUrl) {
-                        runCatching {
-                            SteamQrCodeBitmapGenerator.generate(qrChallenge.challengeUrl)
-                        }.getOrNull()
-                    }
-                    qrBitmap?.let { bitmap ->
-                        Image(
-                            bitmap = bitmap,
-                            contentDescription = stringResource(
-                                R.string.steam_add_authenticator_protocol_qr_preview_title,
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                    Text(
-                        text = stringResource(
-                            R.string.steam_add_authenticator_protocol_qr_url,
-                            qrChallenge.challengeUrl,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
+                        text = stringResource(R.string.steam_add_authenticator_protocol_title),
+                        style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    if (qrChallenge.hadRemoteInteraction) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.steam_add_authenticator_protocol_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    protocolStatusMessage?.let { message ->
                         Text(
-                            text = stringResource(
-                                R.string.steam_add_authenticator_protocol_qr_interacted,
-                            ),
+                            text = message,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
                     }
-                    OutlinedButton(
-                        onClick = {
-                            cancelProtocolLogin(
-                                context.getString(
-                                    R.string.steam_add_authenticator_protocol_cancelled,
-                                ),
-                            )
-                        },
+                    protocolErrorMessage?.let { message ->
+                        Text(
+                            text = message,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
+                    OutlinedTextField(
+                        value = usernameInput,
+                        onValueChange = { usernameInput = it },
                         modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.steam_add_authenticator_protocol_username_label)) },
+                        enabled = !isProtocolLoggingIn,
+                        singleLine = true,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = passwordInput,
+                        onValueChange = { passwordInput = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.steam_add_authenticator_protocol_password_label)) },
+                        enabled = !isProtocolLoggingIn,
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+                    
+                    Button(
+                        onClick = { startProtocolLogin(SteamProtocolLoginMode.INITIAL) },
+                        enabled = !isProtocolLoggingIn,
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
                     ) {
                         Text(
                             stringResource(
-                                R.string.steam_add_authenticator_protocol_qr_cancel_action,
-                            ),
+                                if (isProtocolLoggingIn) R.string.steam_add_authenticator_protocol_action_loading else R.string.steam_add_authenticator_protocol_action
+                            )
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
+                    OutlinedButton(
+                        onClick = { startProtocolLogin(SteamProtocolLoginMode.QR_CODE) },
+                        enabled = !isProtocolLoggingIn,
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (isProtocolLoggingIn && activeQrChallenge != null) R.string.steam_add_authenticator_protocol_qr_action_loading else R.string.steam_add_authenticator_protocol_qr_action
+                            )
                         )
                     }
                 }
             }
         }
+        
+        activeQrChallenge?.let { qrChallenge ->
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = stringResource(R.string.steam_add_authenticator_protocol_qr_preview_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.Start)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        val qrBitmap = remember(qrChallenge.challengeUrl) {
+                            runCatching {
+                                SteamQrCodeBitmapGenerator.generate(qrChallenge.challengeUrl)
+                            }.getOrNull()
+                        }
+                        qrBitmap?.let { bitmap ->
+                            Image(
+                                bitmap = bitmap,
+                                contentDescription = "QR Code",
+                                modifier = Modifier.fillMaxWidth(0.8f).padding(vertical = 16.dp),
+                            )
+                        }
+                        
+                        if (qrChallenge.hadRemoteInteraction) {
+                            Text(
+                                text = stringResource(R.string.steam_add_authenticator_protocol_qr_interacted),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = {
+                                cancelProtocolLogin(context.getString(R.string.steam_add_authenticator_protocol_cancelled))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(stringResource(R.string.steam_add_authenticator_protocol_qr_cancel_action))
+                        }
+                    }
+                }
+            }
+        }
+        
         pendingChallenge?.let { challenge ->
             item {
                 ScreenSectionCard(
@@ -407,85 +394,46 @@ fun SteamProtocolLoginScreen(
                             value = challengeCodeInput,
                             onValueChange = { challengeCodeInput = it },
                             modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(
-                                    stringResource(
-                                        R.string.steam_add_authenticator_challenge_code_label,
-                                    ),
-                                )
-                            },
-                            supportingText = {
-                                Text(challengeSupportingText(challenge))
-                            },
+                            label = { Text(stringResource(R.string.steam_add_authenticator_challenge_code_label)) },
+                            supportingText = { Text(challengeSupportingText(challenge)) },
                             singleLine = true,
                         )
                         Button(
                             onClick = {
                                 val trimmedCode = challengeCodeInput.trim()
                                 if (trimmedCode.isEmpty()) {
-                                    protocolErrorMessage = context.getString(
-                                        R.string.steam_add_authenticator_challenge_code_required,
-                                    )
+                                    protocolErrorMessage = context.getString(R.string.steam_add_authenticator_challenge_code_required)
                                     return@Button
                                 }
                                 protocolErrorMessage = null
                                 submitChallenge(SteamProtocolLoginChallengeAnswer.Code(trimmedCode))
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         ) {
-                            Text(
-                                stringResource(
-                                    R.string.steam_add_authenticator_challenge_submit_action,
-                                ),
-                            )
+                            Text(stringResource(R.string.steam_add_authenticator_challenge_submit_action))
                         }
                     } else if (challenge is SteamProtocolLoginChallenge.DeviceConfirmation) {
-                        Text(
-                            text = stringResource(
-                                R.string.steam_add_authenticator_challenge_device_confirmation_note,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
                         Button(
                             onClick = {
                                 protocolErrorMessage = null
-                                submitChallenge(
-                                    SteamProtocolLoginChallengeAnswer.DeviceConfirmation(
-                                        accepted = true,
-                                    ),
-                                )
+                                submitChallenge(SteamProtocolLoginChallengeAnswer.DeviceConfirmation(accepted = true))
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(
-                                stringResource(
-                                    R.string.steam_add_authenticator_challenge_device_confirmation_approved_action,
-                                ),
-                            )
+                            Text(stringResource(R.string.steam_add_authenticator_challenge_device_confirmation_approved_action))
                         }
                         OutlinedButton(
                             onClick = {
                                 protocolErrorMessage = null
-                                submitChallenge(
-                                    SteamProtocolLoginChallengeAnswer.DeviceConfirmation(
-                                        accepted = false,
-                                    ),
-                                )
+                                submitChallenge(SteamProtocolLoginChallengeAnswer.DeviceConfirmation(accepted = false))
                             },
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(
-                                stringResource(
-                                    R.string.steam_add_authenticator_challenge_device_confirmation_fallback_action,
-                                ),
-                            )
+                            Text(stringResource(R.string.steam_add_authenticator_challenge_device_confirmation_fallback_action))
                         }
                     } else {
                         Text(
-                            text = stringResource(
-                                R.string.steam_add_authenticator_protocol_qr_waiting,
-                            ),
+                            text = stringResource(R.string.steam_add_authenticator_protocol_qr_waiting),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -495,13 +443,9 @@ fun SteamProtocolLoginScreen(
                             protocolStatusMessage = null
                             submitChallenge(SteamProtocolLoginChallengeAnswer.Cancelled)
                         },
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                     ) {
-                        Text(
-                            stringResource(
-                                R.string.steam_add_authenticator_challenge_cancel_action,
-                            ),
-                        )
+                        Text(stringResource(R.string.steam_add_authenticator_challenge_cancel_action))
                     }
                 }
             }
@@ -513,21 +457,10 @@ fun SteamProtocolLoginScreen(
 private fun challengeTitle(challenge: SteamProtocolLoginChallenge): String {
     return stringResource(
         when (challenge) {
-            is SteamProtocolLoginChallenge.QrCode -> {
-                R.string.steam_add_authenticator_protocol_qr_preview_title
-            }
-
-            is SteamProtocolLoginChallenge.EmailCode -> {
-                R.string.steam_add_authenticator_challenge_email_title
-            }
-
-            is SteamProtocolLoginChallenge.DeviceCode -> {
-                R.string.steam_add_authenticator_challenge_device_code_title
-            }
-
-            is SteamProtocolLoginChallenge.DeviceConfirmation -> {
-                R.string.steam_add_authenticator_challenge_device_confirmation_title
-            }
+            is SteamProtocolLoginChallenge.QrCode -> R.string.steam_add_authenticator_protocol_qr_preview_title
+            is SteamProtocolLoginChallenge.EmailCode -> R.string.steam_add_authenticator_challenge_email_title
+            is SteamProtocolLoginChallenge.DeviceCode -> R.string.steam_add_authenticator_challenge_device_code_title
+            is SteamProtocolLoginChallenge.DeviceConfirmation -> R.string.steam_add_authenticator_challenge_device_confirmation_title
         },
     )
 }
@@ -535,37 +468,13 @@ private fun challengeTitle(challenge: SteamProtocolLoginChallenge): String {
 @Composable
 private fun challengeDescription(challenge: SteamProtocolLoginChallenge): String {
     return when (challenge) {
-        is SteamProtocolLoginChallenge.QrCode -> {
-            stringResource(
-                R.string.steam_add_authenticator_protocol_qr_preview_description,
-            )
-        }
-
-        is SteamProtocolLoginChallenge.EmailCode -> {
-            stringResource(
-                R.string.steam_add_authenticator_challenge_email_description,
-                challenge.emailAddress,
-            )
-        }
-
-        is SteamProtocolLoginChallenge.DeviceCode -> {
-            stringResource(
-                R.string.steam_add_authenticator_challenge_device_code_description,
-            )
-        }
-
+        is SteamProtocolLoginChallenge.QrCode -> stringResource(R.string.steam_add_authenticator_protocol_qr_preview_description)
+        is SteamProtocolLoginChallenge.EmailCode -> stringResource(R.string.steam_add_authenticator_challenge_email_description, challenge.emailAddress)
+        is SteamProtocolLoginChallenge.DeviceCode -> stringResource(R.string.steam_add_authenticator_challenge_device_code_description)
         is SteamProtocolLoginChallenge.DeviceConfirmation -> {
-            challenge.confirmationUrl
-                ?.takeIf { it.isNotBlank() }
-                ?.let {
-                    stringResource(
-                        R.string.steam_add_authenticator_challenge_device_confirmation_description_with_url,
-                        it,
-                    )
-                }
-                ?: stringResource(
-                    R.string.steam_add_authenticator_challenge_device_confirmation_description,
-                )
+            challenge.confirmationUrl?.takeIf { it.isNotBlank() }?.let {
+                stringResource(R.string.steam_add_authenticator_challenge_device_confirmation_description_with_url, it)
+            } ?: stringResource(R.string.steam_add_authenticator_challenge_device_confirmation_description)
         }
     }
 }
@@ -574,27 +483,18 @@ private fun challengeDescription(challenge: SteamProtocolLoginChallenge): String
 private fun challengeSupportingText(challenge: SteamProtocolLoginChallenge): String {
     return when (challenge) {
         is SteamProtocolLoginChallenge.QrCode -> ""
-
         is SteamProtocolLoginChallenge.EmailCode -> {
             stringResource(
-                if (challenge.previousCodeWasIncorrect) {
-                    R.string.steam_add_authenticator_challenge_email_retry_supporting
-                } else {
-                    R.string.steam_add_authenticator_challenge_email_supporting
-                },
+                if (challenge.previousCodeWasIncorrect) R.string.steam_add_authenticator_challenge_email_retry_supporting
+                else R.string.steam_add_authenticator_challenge_email_supporting
             )
         }
-
         is SteamProtocolLoginChallenge.DeviceCode -> {
             stringResource(
-                if (challenge.previousCodeWasIncorrect) {
-                    R.string.steam_add_authenticator_challenge_device_code_retry_supporting
-                } else {
-                    R.string.steam_add_authenticator_challenge_device_code_supporting
-                },
+                if (challenge.previousCodeWasIncorrect) R.string.steam_add_authenticator_challenge_device_code_retry_supporting
+                else R.string.steam_add_authenticator_challenge_device_code_supporting
             )
         }
-
         is SteamProtocolLoginChallenge.DeviceConfirmation -> ""
     }
 }

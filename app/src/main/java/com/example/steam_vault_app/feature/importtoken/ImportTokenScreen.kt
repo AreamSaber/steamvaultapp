@@ -3,11 +3,23 @@ package com.example.steam_vault_app.feature.importtoken
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -17,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -25,14 +38,9 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.example.steam_vault_app.R
-import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
 
-private data class ImportMethod(
-    val title: String,
-    val body: String,
-)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportTokenScreen(
     onOpenSteamAddAuthenticator: () -> Unit,
@@ -55,294 +63,199 @@ fun ImportTokenScreen(
     }
     var manualSharedSecret by rememberSaveable { mutableStateOf("") }
     var helperMessage by rememberSaveable { mutableStateOf<String?>(null) }
-    val scaffoldJson = entryContext?.let(ImportTokenScaffoldFactory::buildExistingAuthenticatorJson)
+    var showManualForm by rememberSaveable { mutableStateOf(false) }
 
-    val methods = listOf(
-        ImportMethod(
-            title = stringResource(R.string.import_method_mafile_title),
-            body = stringResource(R.string.import_method_mafile_body),
-        ),
-        ImportMethod(
-            title = stringResource(R.string.import_method_json_title),
-            body = stringResource(R.string.import_method_json_body),
-        ),
-        ImportMethod(
-            title = stringResource(R.string.import_method_otpauth_title),
-            body = stringResource(R.string.import_method_otpauth_body),
-        ),
-        ImportMethod(
-            title = stringResource(R.string.import_method_manual_title),
-            body = stringResource(R.string.import_method_manual_body),
-        ),
-    )
+    val scaffoldJson = entryContext?.let(ImportTokenScaffoldFactory::buildExistingAuthenticatorJson)
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item {
             Text(
-                text = stringResource(R.string.import_title),
+                text = "Add Authenticator",
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
             )
         }
+
+        // Recovery / Existing Authenticator Alert
         if (entryContext?.kind == ImportTokenEntryContext.Kind.EXISTING_AUTHENTICATOR) {
             item {
-                ScreenSectionCard(
-                    title = stringResource(R.string.import_existing_authenticator_title),
-                    description = stringResource(
-                        R.string.import_existing_authenticator_description,
-                    ),
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    entryContext.preferredAccountName?.let { accountName ->
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_account_name,
-                                accountName,
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                    entryContext.steamId?.let { steamId ->
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_steam_id,
-                                steamId,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    entryContext.deviceId?.let { deviceId ->
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_device_id,
-                                deviceId,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    if (entryContext.preferredAccountName != null) {
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_prefill_note,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    ChecklistRow(
-                        label = stringResource(
-                            R.string.import_existing_authenticator_check_materials,
-                        ),
-                        highlighted = true,
-                    )
-                    ChecklistRow(
-                        label = stringResource(
-                            R.string.import_existing_authenticator_check_not_reissued,
-                        ),
-                        highlighted = false,
-                    )
-                    ChecklistRow(
-                        label = stringResource(
-                            R.string.import_existing_authenticator_check_recover,
-                        ),
-                        highlighted = false,
-                    )
-                    scaffoldJson?.let { scaffold ->
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_scaffold_title,
-                            ),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = stringResource(
-                                R.string.import_existing_authenticator_scaffold_description,
-                            ),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        OutlinedTextField(
-                            value = scaffold,
-                            onValueChange = {},
-                            modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(
-                                    stringResource(
-                                        R.string.import_existing_authenticator_scaffold_label,
-                                    ),
-                                )
-                            },
-                            readOnly = true,
-                            minLines = 8,
-                            textStyle = MaterialTheme.typography.bodySmall.copy(
-                                fontFamily = FontFamily.Monospace,
-                            ),
-                        )
-                        OutlinedButton(
-                            onClick = {
-                                clipboardManager.setText(AnnotatedString(scaffold))
-                                helperMessage = context.getString(
-                                    R.string.import_existing_authenticator_scaffold_copied,
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Warning, contentDescription = "Warning", tint = MaterialTheme.colorScheme.error)
                             Text(
-                                stringResource(
-                                    R.string.import_existing_authenticator_scaffold_copy_action,
-                                ),
+                                text = stringResource(R.string.import_existing_authenticator_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(R.string.import_existing_authenticator_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                        )
+                        scaffoldJson?.let { scaffold ->
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(
+                                onClick = {
+                                    clipboardManager.setText(AnnotatedString(scaffold))
+                                    helperMessage = context.getString(R.string.import_existing_authenticator_scaffold_copied)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(R.string.import_existing_authenticator_scaffold_copy_action))
+                            }
+                        }
+                        helperMessage?.let { message ->
+                            Text(
+                                text = message,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(top = 8.dp)
                             )
                         }
                     }
-                    helperMessage?.let { message ->
+                }
+            }
+        }
+
+        // Selection Cards
+        item {
+            Card(
+                onClick = onOpenSteamAddAuthenticator,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.AccountCircle,
+                        contentDescription = "Steam",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    Column(modifier = Modifier.padding(start = 16.dp)) {
                         Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = stringResource(R.string.import_login_path_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        )
+                        Text(
+                            text = stringResource(R.string.import_login_path_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                 }
             }
         }
+
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.import_login_path_title),
-                description = stringResource(R.string.import_login_path_description),
+            Card(
+                onClick = { showManualForm = !showManualForm },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                ChecklistRow(
-                    label = stringResource(R.string.import_login_path_check_sign_in),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.import_login_path_check_verify),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.import_login_path_check_bind_authenticator),
-                    highlighted = true,
-                )
-                Button(
-                    onClick = onOpenSteamAddAuthenticator,
-                    modifier = Modifier.fillMaxWidth(),
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(stringResource(R.string.import_login_path_action))
-                }
-                OutlinedButton(
-                    onClick = onOpenSteamBrowserLogin,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.import_login_path_browser_fallback_action))
-                }
-            }
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.import_fallback_title),
-                description = stringResource(R.string.import_fallback_description),
-            ) {
-                Text(
-                    text = stringResource(R.string.import_fallback_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.import_supported_methods_title),
-                description = stringResource(R.string.import_supported_methods_description),
-            ) {
-                methods.forEachIndexed { index, method ->
-                    ChecklistRow(
-                        label = stringResource(
-                            R.string.import_method_summary,
-                            method.title,
-                            method.body,
-                        ),
-                        highlighted = index == 0,
+                    Icon(
+                        Icons.Default.Code,
+                        contentDescription = "Code",
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                }
-            }
-        }
-        items(methods) { method ->
-            ScreenSectionCard(
-                title = method.title,
-                description = method.body,
-            ) {
-                Text(
-                    text = stringResource(R.string.import_method_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-        errorMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = stringResource(R.string.import_form_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
-                OutlinedTextField(
-                    value = rawPayload,
-                    onValueChange = { rawPayload = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 4,
-                    label = { Text(stringResource(R.string.import_label_raw_payload)) },
-                    placeholder = { Text(stringResource(R.string.import_placeholder_raw_payload)) },
-                )
-                OutlinedTextField(
-                    value = manualAccountName,
-                    onValueChange = { manualAccountName = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.import_label_manual_account_name)) },
-                )
-                OutlinedTextField(
-                    value = manualSharedSecret,
-                    onValueChange = { manualSharedSecret = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.import_label_manual_shared_secret)) },
-                )
-                Button(
-                    onClick = {
-                        onSaveImport(
-                            rawPayload,
-                            manualAccountName,
-                            manualSharedSecret,
+                    Column(modifier = Modifier.padding(start = 16.dp)) {
+                        Text(
+                            text = stringResource(R.string.import_fallback_title),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                    },
-                    enabled = !isSubmitting && (
-                        rawPayload.isNotBlank() ||
-                            (manualAccountName.isNotBlank() && manualSharedSecret.isNotBlank())
-                        ),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
+                        Text(
+                            text = stringResource(R.string.import_fallback_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+
+        if (showManualForm || errorMessage != null) {
+            errorMessage?.let { message ->
+                item {
                     Text(
-                        stringResource(
-                            if (isSubmitting) {
-                                R.string.import_action_loading
-                            } else {
-                                R.string.import_action_idle
-                            },
-                        ),
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
+            }
+
+            item {
+                ScreenSectionCard(
+                    title = stringResource(R.string.import_form_title),
+                    description = stringResource(R.string.import_fallback_note),
+                ) {
+                    OutlinedTextField(
+                        value = rawPayload,
+                        onValueChange = { rawPayload = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 4,
+                        label = { Text(stringResource(R.string.import_label_raw_payload)) },
+                        placeholder = { Text(stringResource(R.string.import_placeholder_raw_payload)) },
+                    )
+                    OutlinedTextField(
+                        value = manualAccountName,
+                        onValueChange = { manualAccountName = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.import_label_manual_account_name)) },
+                    )
+                    OutlinedTextField(
+                        value = manualSharedSecret,
+                        onValueChange = { manualSharedSecret = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(stringResource(R.string.import_label_manual_shared_secret)) },
+                    )
+                    Button(
+                        onClick = {
+                            onSaveImport(rawPayload, manualAccountName, manualSharedSecret)
+                        },
+                        enabled = !isSubmitting && (
+                            rawPayload.isNotBlank() ||
+                                (manualAccountName.isNotBlank() && manualSharedSecret.isNotBlank())
+                            ),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (isSubmitting) R.string.import_action_loading else R.string.import_action_idle
+                            ),
+                        )
+                    }
+                }
+            }
+        }
+
+        item {
+            OutlinedButton(
+                onClick = onOpenSteamBrowserLogin,
+                modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+            ) {
+                Text(stringResource(R.string.import_login_path_browser_fallback_action))
             }
         }
     }

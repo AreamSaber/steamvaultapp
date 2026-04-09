@@ -1,22 +1,33 @@
 package com.example.steam_vault_app.feature.tokens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +59,7 @@ fun TokenDetailScreen(
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
     var sensitiveValuesVisible by rememberSaveable { mutableStateOf(false) }
+    var advancedInfoVisible by rememberSaveable { mutableStateOf(false) }
     var copyMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
     val tokenState by produceState<AppUiState<SteamGuardAccountSnapshot>>(
@@ -109,77 +121,71 @@ fun TokenDetailScreen(
                 )
 
                 item {
-                    Text(
-                        text = token.accountName,
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
-                }
-                item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.token_detail_code_title),
-                        description = stringResource(R.string.token_detail_code_description),
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
                     ) {
                         Text(
-                            text = snapshot.codeDisplay,
-                            style = MaterialTheme.typography.displaySmall,
-                            fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = token.accountName,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
-                        Text(
-                            text = stringResource(
-                                R.string.token_card_seconds_remaining,
-                                snapshot.secondsRemaining,
-                            ),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        LinearProgressIndicator(
-                            progress = { snapshot.progress },
-                            modifier = Modifier.fillMaxWidth(),
-                            color = MaterialTheme.colorScheme.secondary,
-                            trackColor = MaterialTheme.colorScheme.surface,
-                        )
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Button(
-                                onClick = {
-                                    if (!snapshot.hasSecretError) {
-                                        clipboardManager.setText(
-                                            AnnotatedString(snapshot.codeDisplay),
-                                        )
-                                        copyMessage = context.getString(R.string.token_detail_copy_success)
-                                    }
-                                },
-                                enabled = !snapshot.hasSecretError,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(R.string.token_detail_copy_action))
-                            }
-                            OutlinedButton(
-                                onClick = {
-                                    sensitiveValuesVisible = !sensitiveValuesVisible
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                progress = { snapshot.progress },
+                                modifier = Modifier.size(160.dp),
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                strokeWidth = 8.dp,
+                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
-                                    stringResource(
-                                        if (sensitiveValuesVisible) {
-                                            R.string.token_detail_hide_sensitive
-                                        } else {
-                                            R.string.token_detail_show_sensitive
-                                        },
+                                    text = snapshot.codeDisplay,
+                                    style = MaterialTheme.typography.displayMedium,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.primary,
+                                )
+                                Text(
+                                    text = stringResource(
+                                        R.string.token_card_seconds_remaining,
+                                        snapshot.secondsRemaining,
                                     ),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
                         }
+                        
+                        Spacer(modifier = Modifier.height(32.dp))
+                        
+                        Button(
+                            onClick = {
+                                if (!snapshot.hasSecretError) {
+                                    clipboardManager.setText(
+                                        AnnotatedString(snapshot.codeDisplay),
+                                    )
+                                    copyMessage = context.getString(R.string.token_detail_copy_success)
+                                }
+                            },
+                            enabled = !snapshot.hasSecretError,
+                            modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
+                        ) {
+                            Text(stringResource(R.string.token_detail_copy_action), style = MaterialTheme.typography.titleMedium)
+                        }
+                        
                         copyMessage?.let { message ->
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = message,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.secondary,
                             )
                         }
+                        
                         if (snapshot.hasSecretError) {
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.token_card_secret_error),
                                 style = MaterialTheme.typography.bodySmall,
@@ -188,126 +194,160 @@ fun TokenDetailScreen(
                         }
                     }
                 }
+                
                 item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.token_detail_session_title),
-                        description = stringResource(R.string.token_detail_session_description),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        ChecklistRow(
-                            label = if (snapshotItem.hasProtocolSession) {
-                                stringResource(R.string.steam_session_identity_present) // Use a better string if available, falling back to what makes sense
-                            } else if (snapshotItem.hasWebConfirmationSession) {
-                                stringResource(R.string.steam_confirmation_session_cookie_present)
-                            } else {
-                                stringResource(R.string.steam_confirmation_session_missing)
-                            },
-                            highlighted = snapshotItem.hasProtocolSession || snapshotItem.hasWebConfirmationSession,
-                        )
-                        if (!snapshotItem.hasProtocolSession) {
-                            Text(
-                                text = "This authenticator uses legacy web sessions. Please login via protocol to upgrade.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                        Button(
-                            onClick = onOpenSteamSession,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.token_detail_open_session_action))
-                        }
                         OutlinedButton(
                             onClick = onOpenSteamConfirmations,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f).height(48.dp),
                         ) {
                             Text(stringResource(R.string.token_detail_open_confirmations_action))
                         }
                     }
                 }
+                
                 item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.token_detail_metadata_title),
-                        description = stringResource(R.string.token_detail_metadata_description),
+                    TextButton(
+                        onClick = { advancedInfoVisible = !advancedInfoVisible },
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        DetailLine(label = stringResource(R.string.token_detail_metadata_platform), value = token.platform)
-                        DetailLine(label = stringResource(R.string.token_detail_metadata_created_at), value = token.createdAt)
-                        DetailLine(label = stringResource(R.string.token_detail_metadata_updated_at), value = token.updatedAt)
-                        DetailLine(
-                            label = stringResource(R.string.token_detail_metadata_serial_number),
-                            value = token.serialNumber ?: stringResource(R.string.common_not_saved),
-                        )
-                        DetailLine(
-                            label = stringResource(R.string.token_detail_metadata_device_id),
-                            value = token.deviceId ?: stringResource(R.string.common_not_saved),
-                        )
-                        DetailLine(
-                            label = stringResource(R.string.token_detail_metadata_token_gid),
-                            value = token.tokenGid ?: stringResource(R.string.common_not_saved),
-                        )
-                        DetailLine(
-                            label = stringResource(R.string.token_detail_metadata_uri),
-                            value = token.uri ?: stringResource(R.string.common_not_saved),
-                        )
+                        Text(if (advancedInfoVisible) "Hide Advanced Info" else "Show Advanced Info")
                     }
                 }
+
                 item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.token_detail_protected_title),
-                        description = stringResource(R.string.token_detail_protected_description),
-                    ) {
-                        ChecklistRow(
-                            label = if (sensitiveValuesVisible) {
-                                stringResource(
-                                    R.string.token_detail_revocation_code,
-                                    token.revocationCode ?: stringResource(R.string.common_not_saved),
+                    AnimatedVisibility(visible = advancedInfoVisible) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ScreenSectionCard(
+                                title = stringResource(R.string.token_detail_session_title),
+                                description = stringResource(R.string.token_detail_session_description),
+                            ) {
+                                ChecklistRow(
+                                    label = if (snapshotItem.hasProtocolSession) {
+                                        stringResource(R.string.steam_session_identity_present) 
+                                    } else if (snapshotItem.hasWebConfirmationSession) {
+                                        stringResource(R.string.steam_confirmation_session_cookie_present)
+                                    } else {
+                                        stringResource(R.string.steam_confirmation_session_missing)
+                                    },
+                                    highlighted = snapshotItem.hasProtocolSession || snapshotItem.hasWebConfirmationSession,
                                 )
-                            } else {
-                                stringResource(
-                                    R.string.token_detail_revocation_code,
-                                    maskValue(context, token.revocationCode),
+                                if (!snapshotItem.hasProtocolSession) {
+                                    Text(
+                                        text = "This authenticator uses legacy web sessions. Please login via protocol to upgrade.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.error,
+                                    )
+                                }
+                                Button(
+                                    onClick = onOpenSteamSession,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(stringResource(R.string.token_detail_open_session_action))
+                                }
+                            }
+
+                            ScreenSectionCard(
+                                title = stringResource(R.string.token_detail_metadata_title),
+                                description = stringResource(R.string.token_detail_metadata_description),
+                            ) {
+                                DetailLine(label = stringResource(R.string.token_detail_metadata_platform), value = token.platform)
+                                DetailLine(label = stringResource(R.string.token_detail_metadata_created_at), value = token.createdAt)
+                                DetailLine(label = stringResource(R.string.token_detail_metadata_updated_at), value = token.updatedAt)
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_serial_number),
+                                    value = token.serialNumber ?: stringResource(R.string.common_not_saved),
                                 )
-                            },
-                            highlighted = sensitiveValuesVisible,
-                        )
-                        ChecklistRow(
-                            label = if (sensitiveValuesVisible) {
-                                stringResource(
-                                    R.string.token_detail_identity_secret,
-                                    token.identitySecret ?: stringResource(R.string.common_not_saved),
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_device_id),
+                                    value = token.deviceId ?: stringResource(R.string.common_not_saved),
                                 )
-                            } else {
-                                stringResource(
-                                    R.string.token_detail_identity_secret,
-                                    maskValue(context, token.identitySecret),
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_token_gid),
+                                    value = token.tokenGid ?: stringResource(R.string.common_not_saved),
                                 )
-                            },
-                            highlighted = sensitiveValuesVisible,
-                        )
-                        ChecklistRow(
-                            label = if (sensitiveValuesVisible) {
-                                stringResource(
-                                    R.string.token_detail_secret1,
-                                    token.secret1 ?: stringResource(R.string.common_not_saved),
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_uri),
+                                    value = token.uri ?: stringResource(R.string.common_not_saved),
                                 )
-                            } else {
-                                stringResource(
-                                    R.string.token_detail_secret1,
-                                    maskValue(context, token.secret1),
+                            }
+
+                            ScreenSectionCard(
+                                title = stringResource(R.string.token_detail_protected_title),
+                                description = stringResource(R.string.token_detail_protected_description),
+                            ) {
+                                OutlinedButton(
+                                    onClick = { sensitiveValuesVisible = !sensitiveValuesVisible },
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                                ) {
+                                    Text(
+                                        stringResource(
+                                            if (sensitiveValuesVisible) {
+                                                R.string.token_detail_hide_sensitive
+                                            } else {
+                                                R.string.token_detail_show_sensitive
+                                            },
+                                        ),
+                                    )
+                                }
+                                ChecklistRow(
+                                    label = if (sensitiveValuesVisible) {
+                                        stringResource(
+                                            R.string.token_detail_revocation_code,
+                                            token.revocationCode ?: stringResource(R.string.common_not_saved),
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.token_detail_revocation_code,
+                                            maskValue(context, token.revocationCode),
+                                        )
+                                    },
+                                    highlighted = sensitiveValuesVisible,
                                 )
-                            },
-                            highlighted = sensitiveValuesVisible,
-                        )
-                        ChecklistRow(
-                            label = if (sensitiveValuesVisible) {
-                                stringResource(R.string.token_detail_shared_secret, token.sharedSecret)
-                            } else {
-                                stringResource(
-                                    R.string.token_detail_shared_secret,
-                                    maskValue(context, token.sharedSecret),
+                                ChecklistRow(
+                                    label = if (sensitiveValuesVisible) {
+                                        stringResource(
+                                            R.string.token_detail_identity_secret,
+                                            token.identitySecret ?: stringResource(R.string.common_not_saved),
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.token_detail_identity_secret,
+                                            maskValue(context, token.identitySecret),
+                                        )
+                                    },
+                                    highlighted = sensitiveValuesVisible,
                                 )
-                            },
-                            highlighted = sensitiveValuesVisible,
-                        )
+                                ChecklistRow(
+                                    label = if (sensitiveValuesVisible) {
+                                        stringResource(
+                                            R.string.token_detail_secret1,
+                                            token.secret1 ?: stringResource(R.string.common_not_saved),
+                                        )
+                                    } else {
+                                        stringResource(
+                                            R.string.token_detail_secret1,
+                                            maskValue(context, token.secret1),
+                                        )
+                                    },
+                                    highlighted = sensitiveValuesVisible,
+                                )
+                                ChecklistRow(
+                                    label = if (sensitiveValuesVisible) {
+                                        stringResource(R.string.token_detail_shared_secret, token.sharedSecret)
+                                    } else {
+                                        stringResource(
+                                            R.string.token_detail_shared_secret,
+                                            maskValue(context, token.sharedSecret),
+                                        )
+                                    },
+                                    highlighted = sensitiveValuesVisible,
+                                )
+                            }
+                        }
                     }
                 }
             }
