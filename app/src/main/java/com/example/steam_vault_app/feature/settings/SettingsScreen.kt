@@ -196,7 +196,7 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_cloud_title)) {
                 SettingsActionRow(
-                    icon = androidx.compose.material.icons.filled.CloudSync,
+                    icon = androidx.compose.material.icons.filled.Sync,
                     label = stringResource(R.string.settings_modern_cloud_status),
                     onClick = onOpenCloudBackupStatus
                 )
