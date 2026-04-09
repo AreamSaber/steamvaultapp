@@ -25,7 +25,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.example.steam_vault_app.R
-import com.example.steam_vault_app.domain.model.TokenRecord
+import com.example.steam_vault_app.domain.model.SteamGuardAccountSnapshot
+import com.example.steam_vault_app.domain.repository.SteamSessionRepository
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.domain.security.VaultCryptography
 import com.example.steam_vault_app.ui.common.AppUiState
@@ -36,6 +37,7 @@ import com.example.steam_vault_app.ui.common.ScreenSectionCard
 fun TokenDetailScreen(
     tokenId: String,
     vaultRepository: VaultRepository,
+    steamSessionRepository: SteamSessionRepository,
     vaultCryptography: VaultCryptography,
     steamTimeOffsetSeconds: Long,
     refreshVersion: Int,
@@ -48,7 +50,7 @@ fun TokenDetailScreen(
     var sensitiveValuesVisible by rememberSaveable { mutableStateOf(false) }
     var copyMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
-    val tokenState by produceState<AppUiState<TokenRecord>>(
+    val tokenState by produceState<AppUiState<SteamGuardAccountSnapshot>>(
         initialValue = AppUiState.Loading,
         key1 = tokenId,
         key2 = refreshVersion,
@@ -58,7 +60,12 @@ fun TokenDetailScreen(
             if (token == null) {
                 AppUiState.Error(context.getString(R.string.token_detail_error_not_found))
             } else {
-                AppUiState.Success(token)
+                val session = steamSessionRepository.getSession(tokenId)
+                val snapshot = SteamGuardAccountSnapshot.fromLegacy(
+                    token = token,
+                    session = session,
+                )
+                AppUiState.Success(snapshot)
             }
         } catch (_: Exception) {
             AppUiState.Error(context.getString(R.string.token_detail_error_load_failed))
@@ -92,7 +99,8 @@ fun TokenDetailScreen(
             }
 
             is AppUiState.Success -> {
-                val token = currentState.value
+                val snapshotItem = currentState.value
+                val token = snapshotItem.toTokenRecord()
                 val snapshot = buildSteamCodeSnapshot(
                     token = token,
                     currentEpochSeconds = currentEpochSeconds,
@@ -186,13 +194,22 @@ fun TokenDetailScreen(
                         description = stringResource(R.string.token_detail_session_description),
                     ) {
                         ChecklistRow(
-                            label = if (token.identitySecret.isNullOrBlank()) {
-                                stringResource(R.string.token_detail_identity_missing)
+                            label = if (snapshotItem.hasProtocolSession) {
+                                stringResource(R.string.steam_session_identity_present) // Use a better string if available, falling back to what makes sense
+                            } else if (snapshotItem.hasWebConfirmationSession) {
+                                stringResource(R.string.steam_confirmation_session_cookie_present)
                             } else {
-                                stringResource(R.string.token_detail_identity_present)
+                                stringResource(R.string.steam_confirmation_session_missing)
                             },
-                            highlighted = !token.identitySecret.isNullOrBlank(),
+                            highlighted = snapshotItem.hasProtocolSession || snapshotItem.hasWebConfirmationSession,
                         )
+                        if (!snapshotItem.hasProtocolSession) {
+                            Text(
+                                text = "This authenticator uses legacy web sessions. Please login via protocol to upgrade.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                         Button(
                             onClick = onOpenSteamSession,
                             modifier = Modifier.fillMaxWidth(),

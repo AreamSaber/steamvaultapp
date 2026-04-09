@@ -812,21 +812,7 @@ fun SteamAuthenticatorBindingScreen(
                             ),
                             highlighted = bindingPreparation.resolvedSteamId != null,
                         )
-                        ChecklistRow(
-                            label = stringResource(
-                                if (bindingPreparation.oauthToken != null && bindingPreparation.webApiKey != null) {
-                                    R.string.steam_authenticator_binding_check_both_auth_ready
-                                } else if (bindingPreparation.oauthToken != null) {
-                                    R.string.steam_authenticator_binding_check_oauth_ready
-                                } else if (bindingPreparation.webApiKey != null) {
-                                    R.string.steam_authenticator_binding_check_web_api_key_ready
-                                } else {
-                                    R.string.steam_authenticator_binding_check_auth_missing
-                                },
-                            ),
-                            highlighted = bindingPreparation.oauthToken != null ||
-                                bindingPreparation.webApiKey != null,
-                        )
+
                         ChecklistRow(
                             label = stringResource(
                                 if (bindingPreparation.isReadyForBinding) {

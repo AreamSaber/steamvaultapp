@@ -155,6 +155,7 @@ fun SteamVaultNavHost(
             TokenDetailScreen(
                 tokenId = tokenId,
                 vaultRepository = vaultRepository,
+                steamSessionRepository = steamSessionRepository,
                 vaultCryptography = vaultCryptography,
                 steamTimeOffsetSeconds = steamTimeSyncState.offsetSeconds,
                 refreshVersion = vaultRefreshVersion,

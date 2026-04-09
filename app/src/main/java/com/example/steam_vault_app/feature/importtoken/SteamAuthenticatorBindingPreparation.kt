@@ -16,7 +16,6 @@ internal enum class SteamAuthenticatorBindingRequirement {
     SESSION_ID_COOKIE,
     STEAM_LOGIN_SECURE_COOKIE,
     STEAM_ID,
-    API_AUTHENTICATION,
 }
 
 internal data class SteamAuthenticatorBindingPreparation(
@@ -88,9 +87,6 @@ internal object SteamAuthenticatorBindingPreparationFactory {
             if (resolvedSteamId == null) {
                 add(SteamAuthenticatorBindingRequirement.STEAM_ID)
             }
-            if (oauthToken == null && webApiKey == null) {
-                add(SteamAuthenticatorBindingRequirement.API_AUTHENTICATION)
-            }
         }
 
         return SteamAuthenticatorBindingPreparation(
@@ -149,9 +145,6 @@ internal object SteamAuthenticatorBindingPreparationFactory {
             }
             if (resolvedSteamId == null) {
                 add(SteamAuthenticatorBindingRequirement.STEAM_ID)
-            }
-            if (oauthToken == null && webApiKey == null) {
-                add(SteamAuthenticatorBindingRequirement.API_AUTHENTICATION)
             }
         }
 

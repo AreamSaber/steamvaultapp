@@ -27,7 +27,7 @@ import com.example.steam_vault_app.R
 import com.example.steam_vault_app.domain.model.SteamConfirmation
 import com.example.steam_vault_app.domain.model.SteamSessionRecord
 import com.example.steam_vault_app.domain.model.SteamTimeSyncState
-import com.example.steam_vault_app.domain.model.TokenRecord
+import com.example.steam_vault_app.domain.model.SteamGuardAccountSnapshot
 import com.example.steam_vault_app.domain.repository.SteamSessionRepository
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.domain.sync.SteamConfirmationSyncManager
@@ -71,10 +71,14 @@ fun SteamConfirmationsScreen(
             if (token == null) {
                 AppUiState.Error(context.getString(R.string.steam_confirmation_token_not_found))
             } else {
+                val session = steamSessionRepository.getSession(tokenId)
+                val snapshot = SteamGuardAccountSnapshot.fromLegacy(
+                    token = token,
+                    session = session,
+                )
                 AppUiState.Success(
                     SteamConfirmationsScreenState(
-                        token = token,
-                        session = steamSessionRepository.getSession(tokenId),
+                        snapshot = snapshot,
                     ),
                 )
             }
@@ -124,8 +128,8 @@ fun SteamConfirmationsScreen(
             }
 
             is AppUiState.Success -> {
-                val token = currentScreenState.value.token
-                val session = currentScreenState.value.session
+                val snapshot = currentScreenState.value.snapshot
+                val token = snapshot.toTokenRecord()
 
                 item {
                     Text(
@@ -157,30 +161,20 @@ fun SteamConfirmationsScreen(
                             highlighted = !token.deviceId.isNullOrBlank(),
                         )
                         ChecklistRow(
-                            label = if (session == null) {
-                                stringResource(R.string.steam_confirmation_session_missing)
-                            } else {
+                            label = if (snapshot.hasProtocolSession || snapshot.hasWebConfirmationSession) {
                                 stringResource(R.string.steam_confirmation_session_present)
-                            },
-                            highlighted = session != null,
-                        )
-                        ChecklistRow(
-                            label = if (hasSessionCookie(session, "sessionid")) {
-                                stringResource(R.string.steam_confirmation_session_cookie_present)
                             } else {
-                                stringResource(R.string.steam_confirmation_session_cookie_missing)
+                                stringResource(R.string.steam_confirmation_session_missing)
                             },
-                            highlighted = hasSessionCookie(session, "sessionid"),
+                            highlighted = snapshot.hasProtocolSession || snapshot.hasWebConfirmationSession,
                         )
-                        ChecklistRow(
-                            label = if (hasSessionCookie(session, "steamLoginSecure") || hasSessionCookie(session, "steamLogin")) {
-                                stringResource(R.string.steam_confirmation_login_cookie_present)
-                            } else {
-                                stringResource(R.string.steam_confirmation_login_cookie_missing)
-                            },
-                            highlighted = hasSessionCookie(session, "steamLoginSecure") ||
-                                hasSessionCookie(session, "steamLogin"),
-                        )
+                        if (!snapshot.hasProtocolSession) {
+                            Text(
+                                text = "This authenticator uses legacy web sessions. Please login via protocol to upgrade.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
                         ChecklistRow(
                             label = if (steamTimeSyncState.lastSyncAt == null) {
                                 stringResource(R.string.steam_session_time_not_synced)
@@ -195,14 +189,7 @@ fun SteamConfirmationsScreen(
                         if (
                             !token.identitySecret.isNullOrBlank() &&
                             !token.deviceId.isNullOrBlank() &&
-                            (
-                                session == null ||
-                                    !hasSessionCookie(session, "sessionid") ||
-                                    (
-                                        !hasSessionCookie(session, "steamLoginSecure") &&
-                                            !hasSessionCookie(session, "steamLogin")
-                                        )
-                                )
+                            (!snapshot.hasProtocolSession && !snapshot.hasWebConfirmationSession)
                         ) {
                             Text(
                                 text = stringResource(
@@ -249,6 +236,10 @@ fun SteamConfirmationsScreen(
                         }
                         OutlinedButton(
                             onClick = {
+                                if (!snapshot.hasProtocolSession && !snapshot.hasWebConfirmationSession) {
+                                    actionError = context.getString(R.string.steam_confirmation_error_no_session)
+                                    return@OutlinedButton
+                                }
                                 actionMessage = null
                                 actionError = null
                                 refreshNonce += 1
@@ -256,7 +247,7 @@ fun SteamConfirmationsScreen(
                             enabled = activeActionKey == null,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
-                            Text(stringResource(R.string.steam_confirmation_refresh_action))
+                            Text(text = stringResource(R.string.steam_confirmation_refresh_action))
                         }
                     }
                 }
@@ -345,7 +336,7 @@ fun SteamConfirmationsScreen(
                                                 val nextItems = steamConfirmationSyncManager.approveConfirmation(
                                                     tokenId = tokenId,
                                                     confirmationId = confirmation.id,
-                                                    confirmationNonce = confirmation.nonce,
+                                                    confirmationNonce = confirmation.nonce
                                                 )
                                                 confirmationsState = if (nextItems.isEmpty()) {
                                                     AppUiState.Empty
@@ -413,19 +404,8 @@ fun SteamConfirmationsScreen(
 }
 
 private data class SteamConfirmationsScreenState(
-    val token: TokenRecord,
-    val session: SteamSessionRecord?,
+    val snapshot: SteamGuardAccountSnapshot,
 )
-
-private fun hasSessionCookie(
-    session: SteamSessionRecord?,
-    cookieName: String,
-): Boolean {
-    return session?.cookies?.any { cookie ->
-        cookie.name.equals(cookieName, ignoreCase = true) && cookie.value.isNotBlank()
-    } == true || (cookieName.equals("sessionid", ignoreCase = true) &&
-        !session?.sessionId.isNullOrBlank())
-}
 
 private fun formatOffset(
     context: android.content.Context,
