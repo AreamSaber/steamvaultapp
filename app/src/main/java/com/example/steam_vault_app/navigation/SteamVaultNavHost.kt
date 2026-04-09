@@ -99,8 +99,8 @@ fun SteamVaultNavHost(
     ) {
         composable(AppRoute.Welcome.route) {
             WelcomeScreen(
-                onCreatePassword = { navController.navigate(AppRoute.CreatePassword.route) },
-                onRestoreBackup = { navController.navigate(AppRoute.BackupRestore.route) },
+                onNavigateToCreatePassword = { navController.navigate(AppRoute.CreatePassword.route) },
+                onNavigateToRestoreBackup = { navController.navigate(AppRoute.BackupRestore.route) },
             )
         }
         composable(AppRoute.CreatePassword.route) {

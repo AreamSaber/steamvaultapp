@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
@@ -175,7 +175,7 @@ fun WelcomeScreen(
             VaultPrimaryButton(
                 text = "开始使用",
                 onClick = onNavigateToCreatePassword,
-                leadingIcon = Icons.Default.ArrowForward
+                leadingIcon = Icons.AutoMirrored.Filled.ArrowForward
             )
             VaultSecondaryButton(
                 text = "从备份恢复",
