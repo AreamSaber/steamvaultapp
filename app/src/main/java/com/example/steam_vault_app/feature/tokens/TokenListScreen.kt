@@ -33,6 +33,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material3.Icon
 import com.example.steam_vault_app.R
 import com.example.steam_vault_app.domain.model.TokenRecord
 import com.example.steam_vault_app.domain.repository.VaultRepository
@@ -176,128 +180,119 @@ private fun VaultTokenCard(
         errorCodeDisplay = stringResource(R.string.token_code_error_display),
     )
 
+    val isWarning = snapshot.secondsRemaining <= 5
+    val primaryColor = if (isWarning) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpenTokenDetails(token.id) },
-        shape = MaterialTheme.shapes.large,
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(24.dp),
         ) {
+            // Top Row
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
             ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.token_list_modern_account_label),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = primaryColor,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
                     Text(
                         text = token.accountName,
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.token_list_modern_seconds_left,
-                            snapshot.secondsRemaining,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
+                
+                // Progress Circle
                 Box(
                     contentAlignment = Alignment.Center,
+                    modifier = Modifier.size(40.dp)
                 ) {
                     CircularProgressIndicator(
                         progress = { snapshot.progress },
-                        modifier = Modifier.size(40.dp),
+                        modifier = Modifier.fillMaxSize(),
                         strokeWidth = 3.dp,
-                        color = if (snapshot.secondsRemaining <= 5) {
-                            MaterialTheme.colorScheme.tertiary
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
-                        trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        color = primaryColor,
+                        trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     )
                     Text(
-                        text = snapshot.secondsRemaining.toString(),
+                        text = "${snapshot.secondsRemaining}s",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = primaryColor,
                     )
                 }
             }
+            
+            // Bottom Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom,
             ) {
                 Card(
-                    modifier = Modifier.weight(1f),
-                    shape = MaterialTheme.shapes.medium,
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
                     ),
                 ) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 18.dp, vertical = 16.dp),
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
                     ) {
                         Text(
                             text = snapshot.codeDisplay,
-                            style = MaterialTheme.typography.displaySmall,
+                            style = MaterialTheme.typography.displayMedium,
                             fontFamily = FontFamily.Monospace,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = if (isWarning) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
+                
                 Card(
-                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.clickable(enabled = !snapshot.hasSecretError) {
+                        clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
+                    },
+                    shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     ),
                 ) {
-                    IconButton(
-                        onClick = {
-                            if (!snapshot.hasSecretError) {
-                                clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
-                            }
-                        },
-                        enabled = !snapshot.hasSecretError,
-                        modifier = Modifier.semantics {
-                            contentDescription = copyActionText
-                        },
+                    Row(
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = copyActionText,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
                         Text(
                             text = copyActionText,
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
             }
-            LinearProgressIndicator(
-                progress = { snapshot.progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp),
-                color = if (snapshot.secondsRemaining <= 5) {
-                    MaterialTheme.colorScheme.tertiary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
-                trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            )
+            
             if (snapshot.hasSecretError) {
                 VaultInlineBanner(
                     text = stringResource(R.string.token_card_secret_error),
                     tone = VaultBannerTone.Error,
+                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }

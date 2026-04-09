@@ -1,4 +1,6 @@
-package com.example.steam_vault_app.feature.welcome
+import re
+
+welcome_screen = """package com.example.steam_vault_app.feature.welcome
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -207,3 +209,7 @@ private fun TrustChip(icon: androidx.compose.ui.graphics.vector.ImageVector, tex
         Text(text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
+"""
+with open("app/src/main/java/com/example/steam_vault_app/feature/welcome/WelcomeScreen.kt", "w") as f:
+    f.write(welcome_screen)
+
