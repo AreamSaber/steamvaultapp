@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -132,7 +132,7 @@ fun UnlockScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Fingerprint,
+                            imageVector = androidx.compose.material.icons.filled.Person,
                             contentDescription = stringResource(R.string.unlock_modern_biometric_action),
                             modifier = Modifier.size(56.dp),
                             tint = MaterialTheme.colorScheme.primary

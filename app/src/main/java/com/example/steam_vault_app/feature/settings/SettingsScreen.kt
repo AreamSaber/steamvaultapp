@@ -16,16 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.CloudSync
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Fingerprint
-import androidx.compose.material.icons.filled.LockReset
-import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -103,25 +100,25 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_security_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.LockReset,
+                    icon = androidx.compose.material.icons.filled.Lock,
                     label = stringResource(R.string.settings_modern_change_password),
                     onClick = onOpenChangePassword
                 )
                 SettingsActionRow(
-                    icon = Icons.Default.Timer,
+                    icon = androidx.compose.material.icons.filled.Lock,
                     label = stringResource(R.string.settings_modern_lock_now),
                     onClick = onLockVault,
                     showArrow = false
                 )
                 SettingsSwitchRow(
-                    icon = Icons.Default.Fingerprint,
+                    icon = androidx.compose.material.icons.filled.Person,
                     label = stringResource(R.string.settings_modern_biometric),
                     checked = securitySettings.biometricQuickUnlockEnabled,
                     onCheckedChange = onBiometricQuickUnlockToggle,
                     enabled = biometricQuickUnlockAvailable || securitySettings.biometricQuickUnlockEnabled
                 )
                 SettingsSwitchRow(
-                    icon = Icons.Default.VisibilityOff,
+                    icon = androidx.compose.material.icons.filled.Lock,
                     label = stringResource(R.string.settings_modern_secure_screen),
                     checked = securitySettings.secureScreensEnabled,
                     onCheckedChange = { enabled ->
@@ -184,12 +181,12 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_backup_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.Download,
+                    icon = androidx.compose.material.icons.filled.KeyboardArrowDown,
                     label = stringResource(R.string.settings_modern_export),
                     onClick = onOpenBackupExport
                 )
                 SettingsActionRow(
-                    icon = Icons.Default.Restore,
+                    icon = androidx.compose.material.icons.filled.Refresh,
                     label = stringResource(R.string.settings_modern_restore),
                     onClick = onOpenBackupRestore
                 )
@@ -199,12 +196,12 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_cloud_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.CloudSync,
+                    icon = androidx.compose.material.icons.filled.CloudSync,
                     label = stringResource(R.string.settings_modern_cloud_status),
                     onClick = onOpenCloudBackupStatus
                 )
                 SettingsActionRow(
-                    icon = Icons.Default.Cloud,
+                    icon = androidx.compose.material.icons.filled.Cloud,
                     label = stringResource(R.string.settings_modern_cloud_config),
                     onClick = onOpenCloudBackupConfig
                 )
@@ -276,7 +273,7 @@ private fun SettingsActionRow(
         }
         if (showArrow) {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outline
             )
