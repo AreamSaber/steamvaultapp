@@ -17,11 +17,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.VerifiedUser
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -93,7 +92,7 @@ fun WelcomeScreen(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Default.Shield,
+                            imageVector = Icons.Default.Lock,
                             contentDescription = null,
                             modifier = Modifier.size(72.dp),
                             tint = MaterialTheme.colorScheme.onPrimary
@@ -112,7 +111,7 @@ fun WelcomeScreen(
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Lock, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                     }
                 }
                 
@@ -126,7 +125,7 @@ fun WelcomeScreen(
                     border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Key, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -160,9 +159,9 @@ fun WelcomeScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TrustChip(icon = Icons.Default.VerifiedUser, text = "本地加密")
+                TrustChip(icon = Icons.Default.CheckCircle, text = "本地加密")
                 Spacer(modifier = Modifier.size(12.dp))
-                TrustChip(icon = Icons.Default.CloudOff, text = "零云端传输")
+                TrustChip(icon = Icons.Default.Warning, text = "零云端传输")
             }
         }
         
