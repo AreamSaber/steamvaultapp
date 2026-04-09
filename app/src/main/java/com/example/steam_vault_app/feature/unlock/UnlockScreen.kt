@@ -132,7 +132,7 @@ fun UnlockScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = androidx.compose.material.icons.filled.Person,
+                            imageVector = Icons.Default.Person,
                             contentDescription = stringResource(R.string.unlock_modern_biometric_action),
                             modifier = Modifier.size(56.dp),
                             tint = MaterialTheme.colorScheme.primary
