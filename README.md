@@ -1,5 +1,7 @@
 # Steam Vault App
 
+[中文说明](README.zh-CN.md)
+
 [![Android CI](https://github.com/AreamSaber/steamvaultapp/actions/workflows/android-ci.yml/badge.svg)](https://github.com/AreamSaber/steamvaultapp/actions/workflows/android-ci.yml)
 [![License](https://img.shields.io/github/license/AreamSaber/steamvaultapp)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Android-3DDC84)](https://developer.android.com/)
