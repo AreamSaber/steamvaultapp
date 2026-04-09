@@ -1,16 +1,20 @@
 # Steam Vault App
 
-Steam Vault App is a native Android Steam Guard manager focused on secure local storage, Steam mobile authenticator workflows, confirmations, and encrypted backup.
+[![Android CI](https://github.com/AreamSaber/steamvaultapp/actions/workflows/android-ci.yml/badge.svg)](https://github.com/AreamSaber/steamvaultapp/actions/workflows/android-ci.yml)
+[![License](https://img.shields.io/github/license/AreamSaber/steamvaultapp)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Android-3DDC84)](https://developer.android.com/)
+
+Steam Vault App is a native Android Steam Guard manager focused on secure local storage, mobile authenticator workflows, confirmations, QR approval, and encrypted backup.
 
 This project is not affiliated with Valve. It is an independent client-side tool built for personal account management and research-oriented implementation of Steam Guard related flows.
 
-## Current Capabilities
+## Highlights
 
-- Encrypted local vault protected by master password
+- Encrypted local vault protected by a master password
 - Argon2id-based key derivation with wrapped vault key storage
 - Import existing Steam tokens from maFile, JSON, otpauth URI, or manual `shared_secret`
 - Generate Steam Guard codes offline
-- Store and repair Steam mobile session data locally
+- Store, repair, and refresh Steam mobile session data locally
 - Protocol login flow with Steam Guard challenge handling
 - Add and finalize Steam mobile authenticator binding
 - Fetch, approve, and reject Steam confirmations
@@ -18,15 +22,9 @@ This project is not affiliated with Valve. It is an independent client-side tool
 - Export encrypted local backups
 - Upload and restore encrypted WebDAV cloud backups
 
-## Security Model
-
-- Token material is stored in an encrypted vault rather than plaintext project files
-- Sensitive data such as `shared_secret`, `identity_secret`, access tokens, refresh tokens, and backup exports must never be committed to source control
-- Local and cloud backup payloads are encrypted; the repository only contains application code and documentation
-
 ## Project Status
 
-The repository is beyond the initial prototype stage. The current codebase already contains:
+The repository is already past the initial prototype stage. The current codebase includes:
 
 - Native Android Compose application structure
 - Local vault, unlock, and security settings flows
@@ -35,7 +33,13 @@ The repository is beyond the initial prototype stage. The current codebase alrea
 - Confirmation and QR approval flows
 - Local backup and WebDAV cloud backup flows
 
-Some areas are still being hardened, especially lifecycle edge cases such as background cloud backup after lock/exit and broader recovery coverage around Steam session state.
+Some lifecycle edges are still being hardened, especially backup behavior after lock/exit and a few Steam session recovery paths.
+
+## Security Model
+
+- Token material is stored in an encrypted vault rather than plaintext project files
+- Sensitive data such as `shared_secret`, `identity_secret`, access tokens, refresh tokens, maFiles, and backup exports must never be committed to source control
+- Local and cloud backup payloads are encrypted; the repository only contains application code and documentation
 
 ## Tech Stack
 
@@ -46,7 +50,7 @@ Some areas are still being hardened, especially lifecycle edge cases such as bac
 - OkHttp
 - WebDAV
 
-## Project Structure
+## Repository Layout
 
 - `app/`: Android application source
 - `docs/`: product, architecture, and implementation notes
@@ -54,23 +58,37 @@ Some areas are still being hardened, especially lifecycle edge cases such as bac
 
 Local research/reference copies of upstream projects such as SDA and SteamKit are intentionally excluded from Git tracking in this workspace.
 
+## Build
+
+Open the project in Android Studio and ensure `local.properties` points to a valid Android SDK.
+
+Common commands:
+
+```powershell
+./gradlew.bat :app:compileDebugKotlin
+./gradlew.bat :app:testDebugUnitTest
+./gradlew.bat :app:assembleDebug
+```
+
+## CI
+
+GitHub Actions runs a safe baseline CI workflow on pushes and pull requests:
+
+- Debug Kotlin compile
+- Android test source compile
+- JVM unit tests
+
+Instrumentation tests and emulator-heavy flows remain better suited for local or dedicated device validation.
+
 ## Key Documents
 
 - [Product Spec](docs/PRODUCT_SPEC.md)
 - [Android Development Tasks](docs/ANDROID_DEVELOPMENT_TASKS.md)
 - [Android Execution Checklist](docs/ANDROID_EXECUTION_CHECKLIST_P2_P4.md)
-- [SDA Android Phase Progress](docs/SDA_Android_阶段进度与后续计划.md)
+- [SDA Flow Analysis](docs/SDA_FLOW_ANALYSIS.md)
+- [SDA Complete Analysis](docs/SDA_Complete_Analysis.md)
 
-## Build
-
-Open the project in Android Studio and ensure `local.properties` points to a valid Android SDK.
-
-Typical commands:
-
-```powershell
-./gradlew.bat :app:compileDebugKotlin
-./gradlew.bat :app:assembleDebug
-```
+Additional Chinese planning and implementation notes are also available under [`docs/`](docs/).
 
 ## Safety Notes
 
