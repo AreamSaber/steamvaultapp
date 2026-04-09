@@ -7,12 +7,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -23,6 +22,11 @@ import com.example.steam_vault_app.domain.model.AutoLockTimeoutOption
 import com.example.steam_vault_app.domain.model.SteamTimeSyncState
 import com.example.steam_vault_app.domain.model.SteamTimeSyncStatus
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
 
 @Composable
 fun SettingsScreen(
@@ -47,23 +51,52 @@ fun SettingsScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.settings_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.settings_modern_title),
+                subtitle = stringResource(R.string.settings_modern_body),
             )
+        }
+        biometricStatusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = if (biometricQuickUnlockAvailable) {
+                        VaultBannerTone.Neutral
+                    } else {
+                        VaultBannerTone.Warning
+                    },
+                )
+            }
+        }
+        securityStatusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
+                )
+            }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.settings_security_policy_title),
-                description = stringResource(R.string.settings_security_policy_description),
+                title = stringResource(R.string.settings_modern_security_title),
+                description = stringResource(R.string.settings_modern_security_body),
             ) {
                 SettingToggleRow(
-                    label = stringResource(R.string.settings_toggle_secure_screens),
+                    label = stringResource(R.string.settings_modern_biometric),
+                    supporting = biometricStatusMessage
+                        ?: stringResource(R.string.settings_biometric_default_status),
+                    checked = securitySettings.biometricQuickUnlockEnabled,
+                    enabled = biometricQuickUnlockAvailable || securitySettings.biometricQuickUnlockEnabled,
+                    onCheckedChange = onBiometricQuickUnlockToggle,
+                )
+                SettingToggleRow(
+                    label = stringResource(R.string.settings_modern_secure_screen),
+                    supporting = stringResource(R.string.settings_modern_secure_screen_body),
                     checked = securitySettings.secureScreensEnabled,
                     onCheckedChange = { enabled ->
                         onSecuritySettingsChanged(
@@ -71,95 +104,27 @@ fun SettingsScreen(
                         )
                     },
                 )
-                SettingToggleRow(
-                    label = stringResource(R.string.settings_toggle_biometric_quick_unlock),
-                    checked = securitySettings.biometricQuickUnlockEnabled,
-                    onCheckedChange = onBiometricQuickUnlockToggle,
-                    enabled = biometricQuickUnlockAvailable || securitySettings.biometricQuickUnlockEnabled,
-                )
-                Text(
-                    text = biometricStatusMessage
-                        ?: stringResource(R.string.settings_biometric_default_status),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (biometricQuickUnlockAvailable) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.error
-                    },
-                )
-                OutlinedButton(
+                VaultSecondaryButton(
+                    text = stringResource(R.string.settings_modern_change_password),
                     onClick = onOpenChangePassword,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_change_password_action))
-                }
-                Text(
-                    text = stringResource(R.string.settings_change_password_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                securityStatusMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.settings_auto_lock_title),
-                description = stringResource(R.string.settings_auto_lock_description),
-            ) {
-                Text(
-                    text = stringResource(
-                        R.string.settings_auto_lock_current_policy,
-                        autoLockLabel(context, securitySettings.autoLockTimeout),
-                    ),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                AutoLockTimeoutOption.entries.forEach { option ->
-                    val isSelected = securitySettings.autoLockTimeout == option
-                    if (isSelected) {
-                        Button(
-                            onClick = {},
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(autoLockLabel(context, option))
-                        }
-                    } else {
-                        OutlinedButton(
-                            onClick = {
-                                onSecuritySettingsChanged(
-                                    securitySettings.copy(autoLockTimeout = option),
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(autoLockLabel(context, option))
-                        }
-                    }
-                }
-                Text(
-                    text = stringResource(R.string.settings_auto_lock_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                VaultSecondaryButton(
+                    text = stringResource(R.string.settings_modern_lock_now),
+                    onClick = onLockVault,
                 )
             }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.settings_steam_time_title),
-                description = stringResource(R.string.settings_steam_time_description),
+                title = stringResource(R.string.settings_modern_time_title),
+                description = stringResource(R.string.settings_modern_time_body),
             ) {
                 Text(
                     text = stringResource(
                         R.string.settings_steam_time_current_offset,
                         formatOffsetSeconds(context, steamTimeSyncState.offsetSeconds),
                     ),
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
@@ -168,122 +133,73 @@ fun SettingsScreen(
                         steamTimeSyncState.lastSyncAt
                             ?: stringResource(R.string.settings_steam_time_last_sync_none),
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                when (steamTimeSyncState.status) {
-                    SteamTimeSyncStatus.ERROR -> {
-                        steamTimeSyncState.lastErrorMessage?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
-
-                    SteamTimeSyncStatus.SUCCESS -> {
-                        Text(
-                            text = stringResource(R.string.settings_steam_time_success),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    SteamTimeSyncStatus.SYNCING -> {
-                        Text(
-                            text = stringResource(R.string.settings_steam_time_syncing),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-
-                    SteamTimeSyncStatus.IDLE -> {
-                        Text(
-                            text = stringResource(R.string.settings_steam_time_idle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                steamTimeStatusText(
+                    state = steamTimeSyncState,
+                    isSyncing = isSyncingSteamTime,
+                )?.let { statusText ->
+                    VaultInlineBanner(
+                        text = statusText,
+                        tone = if (steamTimeSyncState.status == SteamTimeSyncStatus.ERROR) {
+                            VaultBannerTone.Error
+                        } else {
+                            VaultBannerTone.Neutral
+                        },
+                    )
                 }
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isSyncingSteamTime) {
+                            R.string.settings_steam_time_action_loading
+                        } else {
+                            R.string.settings_modern_sync_now
+                        },
+                    ),
                     onClick = onSyncSteamTime,
                     enabled = !isSyncingSteamTime,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isSyncingSteamTime) {
-                                R.string.settings_steam_time_action_loading
-                            } else {
-                                R.string.settings_steam_time_action_idle
-                            },
-                        ),
+                )
+                AutoLockTimeoutOption.entries.forEach { option ->
+                    VaultSecondaryButton(
+                        text = autoLockLabel(context, option),
+                        onClick = {
+                            onSecuritySettingsChanged(
+                                securitySettings.copy(autoLockTimeout = option),
+                            )
+                        },
                     )
                 }
             }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.settings_cloud_backup_title),
-                description = stringResource(R.string.settings_cloud_backup_description),
+                title = stringResource(R.string.settings_modern_backup_title),
+                description = stringResource(R.string.settings_modern_backup_body),
             ) {
-                Button(
-                    onClick = onOpenCloudBackupStatus,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_cloud_backup_open_status))
-                }
-                OutlinedButton(
-                    onClick = onOpenCloudBackupConfig,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_cloud_backup_open_config))
-                }
-                Text(
-                    text = stringResource(R.string.settings_cloud_backup_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                VaultSecondaryButton(
+                    text = stringResource(R.string.settings_modern_export),
+                    onClick = onOpenBackupExport,
+                )
+                VaultSecondaryButton(
+                    text = stringResource(R.string.settings_modern_restore),
+                    onClick = onOpenBackupRestore,
                 )
             }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.settings_local_backup_title),
-                description = stringResource(R.string.settings_local_backup_description),
+                title = stringResource(R.string.settings_modern_cloud_title),
+                description = stringResource(R.string.settings_modern_cloud_body),
             ) {
-                OutlinedButton(
-                    onClick = onOpenBackupExport,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_local_backup_export))
-                }
-                OutlinedButton(
-                    onClick = onOpenBackupRestore,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_local_backup_restore))
-                }
-                Text(
-                    text = stringResource(R.string.settings_local_backup_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                VaultPrimaryButton(
+                    text = stringResource(R.string.settings_modern_cloud_status),
+                    onClick = onOpenCloudBackupStatus,
                 )
-            }
-        }
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(
-                    text = stringResource(R.string.settings_platform_security_note),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                VaultSecondaryButton(
+                    text = stringResource(R.string.settings_modern_cloud_config),
+                    onClick = onOpenCloudBackupConfig,
                 )
-                Button(
-                    onClick = onLockVault,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.settings_lock_now_action))
-                }
             }
         }
     }
@@ -292,6 +208,7 @@ fun SettingsScreen(
 @Composable
 private fun SettingToggleRow(
     label: String,
+    supporting: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     enabled: Boolean = true,
@@ -299,17 +216,44 @@ private fun SettingToggleRow(
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = supporting,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
             enabled = enabled,
         )
+    }
+}
+
+@Composable
+private fun steamTimeStatusText(
+    state: SteamTimeSyncState,
+    isSyncing: Boolean,
+): String? {
+    return when {
+        isSyncing -> stringResource(R.string.settings_steam_time_syncing)
+        state.status == SteamTimeSyncStatus.ERROR -> {
+            state.lastErrorMessage ?: stringResource(R.string.settings_steam_time_idle)
+        }
+
+        state.status == SteamTimeSyncStatus.SUCCESS -> stringResource(R.string.settings_steam_time_success)
+        else -> stringResource(R.string.settings_steam_time_idle)
     }
 }
 

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vault - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#005fb7",
+                      "on-background": "#e2e2e5",
+                      "inverse-on-surface": "#2f3133",
+                      "secondary-fixed": "#d6e3ff",
+                      "on-secondary-fixed": "#011b3b",
+                      "surface-container-lowest": "#0c0e10",
+                      "on-secondary-container": "#a0b6de",
+                      "on-primary-fixed": "#001b3c",
+                      "surface-variant": "#333537",
+                      "on-error": "#690005",
+                      "error-container": "#93000a",
+                      "outline": "#8c919d",
+                      "on-secondary-fixed-variant": "#324769",
+                      "on-error-container": "#ffdad6",
+                      "tertiary-container": "#9f4500",
+                      "tertiary-fixed": "#ffdbca",
+                      "on-tertiary-fixed": "#331100",
+                      "inverse-surface": "#e2e2e5",
+                      "primary-fixed": "#d6e3ff",
+                      "surface-container-highest": "#333537",
+                      "on-surface": "#e2e2e5",
+                      "error": "#ffb4ab",
+                      "primary": "#a8c8ff",
+                      "on-primary-fixed-variant": "#00468a",
+                      "surface": "#121416",
+                      "on-tertiary-fixed-variant": "#773200",
+                      "on-secondary": "#1a3151",
+                      "on-surface-variant": "#c1c6d4",
+                      "tertiary-fixed-dim": "#ffb68f",
+                      "surface-tint": "#a8c8ff",
+                      "on-tertiary": "#542100",
+                      "secondary-container": "#324769",
+                      "surface-dim": "#121416",
+                      "secondary-fixed-dim": "#b2c7f0",
+                      "on-primary": "#003062",
+                      "surface-container-low": "#1a1c1e",
+                      "inverse-primary": "#005eb4",
+                      "surface-container": "#1e2022",
+                      "tertiary": "#ffb68f",
+                      "secondary": "#b2c7f0",
+                      "on-primary-container": "#c9dbff",
+                      "background": "#121416",
+                      "surface-container-high": "#282a2c",
+                      "outline-variant": "#414752",
+                      "primary-fixed-dim": "#a8c8ff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: #121416;
+            color: #e2e2e5;
+            font-family: 'Inter', sans-serif;
+            min-height: 100dvh;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .switch-on .switch-thumb {
+            transform: translateX(24px);
+        }
+        .tap-highlight-none {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-[#121416]/80 backdrop-blur-lg flex items-center justify-between px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img alt="User profile" class="w-full h-full object-cover" data-alt="Modern close-up portrait of a user with neutral lighting and minimalist background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDps0B5G3hi4HH5FbfQ6NZF7HDxqDlnHFI4C2dnbK7uiV-MhMy_O7nrYIxq3Lgey4vp0I7da7XYECaLQ_DOmuIWjPbpv9NE8l5N7QYyAZa7vpyFSfyywb520ad85qm5kKo_EPOWCUpZws44ZviGIaacZHNngJV1h5wLtz0SmB0h9VH2SJuW2zmc3pZ3xpqo8bTeJU5-G_uP_MIDZy4N-J9Kckqq45wd9lryLHtxj3X0Dou8UStzwQtiGDtFBOBPpjjQFi_c6_ZwRo54"/>
+</div>
+<span class="text-xl font-extrabold text-[#a8c8ff] font-['Manrope'] tracking-tight">Vault</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-[#1a1c1e] transition-colors scale-95 duration-150">
+<span class="material-symbols-outlined text-[#414752]">settings_suggest</span>
+</button>
+</header>
+<main class="max-w-2xl mx-auto px-6 pt-8">
+<!-- Header Section -->
+<section class="mb-10">
+<h1 class="font-['Manrope'] font-extrabold text-4xl tracking-tight text-white mb-2">设置</h1>
+<p class="text-on-surface-variant font-body text-sm leading-relaxed">管理你的安全首选项、同步时间并配置备份。</p>
+</section>
+<!-- Security Section -->
+<div class="mb-10">
+<h2 class="text-primary font-headline font-extrabold text-xs uppercase tracking-[0.2em] mb-4 px-1 opacity-70">安全</h2>
+<div class="bg-surface-container-low rounded-[24px] overflow-hidden">
+<!-- Action Item -->
+<button class="w-full flex items-center justify-between px-6 py-5 hover:bg-surface-container-high transition-colors text-left border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">lock_reset</span>
+<span class="font-body font-medium text-on-surface">修改主密码</span>
+</div>
+<span class="material-symbols-outlined text-outline">chevron_right</span>
+</button>
+<!-- Action Item -->
+<button class="w-full flex items-center justify-between px-6 py-5 hover:bg-surface-container-high transition-colors text-left border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">timer</span>
+<span class="font-body font-medium text-on-surface">立即锁定</span>
+</div>
+</button>
+<!-- Switch Item -->
+<div class="w-full flex items-center justify-between px-6 py-5 border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">fingerprint</span>
+<span class="font-body font-medium text-on-surface">生物识别快速解锁</span>
+</div>
+<button class="w-12 h-7 bg-primary-container rounded-full relative flex items-center px-1 switch-on">
+<div class="w-5 h-5 bg-white rounded-full switch-thumb transition-transform duration-200 ease-in-out shadow-sm"></div>
+</button>
+</div>
+<!-- Switch Item -->
+<div class="w-full flex items-center justify-between px-6 py-5">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">visibility_off</span>
+<span class="font-body font-medium text-on-surface">保护敏感页面</span>
+</div>
+<button class="w-12 h-7 bg-primary-container rounded-full relative flex items-center px-1 switch-on">
+<div class="w-5 h-5 bg-white rounded-full switch-thumb transition-transform duration-200 ease-in-out shadow-sm"></div>
+</button>
+</div>
+</div>
+</div>
+<!-- Time Sync Section -->
+<div class="mb-10">
+<h2 class="text-primary font-headline font-extrabold text-xs uppercase tracking-[0.2em] mb-4 px-1 opacity-70">时间同步</h2>
+<div class="bg-surface-container-low rounded-[24px] p-6">
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">update</span>
+<div class="flex flex-col">
+<span class="font-body font-medium text-on-surface">同步 Steam 时间</span>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-label text-outline">上次同步: 2分钟前</span>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full bg-surface-container-high text-primary font-body font-bold py-4 px-6 rounded-2xl flex items-center justify-center gap-2 hover:bg-surface-variant transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+                        立即同步
+                    </button>
+</div>
+</div>
+</div>
+<!-- Backup Section -->
+<div class="mb-10">
+<h2 class="text-primary font-headline font-extrabold text-xs uppercase tracking-[0.2em] mb-4 px-1 opacity-70">备份与恢复</h2>
+<div class="bg-surface-container-low rounded-[24px] overflow-hidden">
+<button class="w-full flex items-center justify-between px-6 py-5 hover:bg-surface-container-high transition-colors text-left border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">upload_file</span>
+<span class="font-body font-medium text-on-surface">导出加密备份</span>
+</div>
+<span class="material-symbols-outlined text-outline">download</span>
+</button>
+<button class="w-full flex items-center justify-between px-6 py-5 hover:bg-surface-container-high transition-colors text-left">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">restore_page</span>
+<span class="font-body font-medium text-on-surface">恢复备份</span>
+</div>
+<span class="material-symbols-outlined text-outline">upload</span>
+</button>
+</div>
+</div>
+<!-- Cloud Backup Section -->
+<div class="mb-16">
+<h2 class="text-primary font-headline font-extrabold text-xs uppercase tracking-[0.2em] mb-4 px-1 opacity-70">云备份</h2>
+<div class="bg-surface-container-low rounded-[24px] p-6 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">cloud_sync</span>
+<div class="flex flex-col">
+<span class="font-body font-medium text-on-surface">配置云备份</span>
+<span class="text-xs font-label text-error uppercase tracking-wider mt-0.5">未连接</span>
+</div>
+</div>
+<button class="px-6 py-2.5 rounded-full bg-primary text-on-primary text-sm font-bold font-body hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+                    连接
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-8 pt-4 bg-[#121416]/80 backdrop-blur-xl border-t border-outline-variant/10">
+<a class="flex flex-col items-center justify-center text-[#414752] p-2 hover:text-primary transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-wider mt-1">Vault</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#414752] p-2 hover:text-primary transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-wider mt-1">Confirm</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#414752] p-2 hover:text-primary transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined">sync</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-wider mt-1">Sync</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary p-2 transition-all tap-highlight-none active:scale-90" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-wider mt-1">Settings</span>
+<div class="w-1 h-1 bg-primary rounded-full mt-1"></div>
+</a>
+</nav>
+</body></html>

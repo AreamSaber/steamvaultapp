@@ -3,14 +3,9 @@ package com.example.steam_vault_app.feature.steamqrlogin
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,8 +29,17 @@ import com.example.steam_vault_app.domain.repository.SteamSessionRepository
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.domain.sync.SteamQrLoginApprovalManager
 import com.example.steam_vault_app.ui.common.AppUiState
-import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultKeyValueRow
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultProgressSteps
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultStepItem
+import com.example.steam_vault_app.ui.common.VaultStepState
+import com.example.steam_vault_app.ui.common.VaultTextField
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import kotlinx.coroutines.launch
@@ -62,7 +66,8 @@ fun SteamQrLoginScreen(
     val qrScanLauncher = rememberLauncherForActivityResult(
         contract = ScanContract(),
     ) { result ->
-        val scannedChallengeUrl = result.contents?.trim()?.takeIf { it.isNotEmpty() } ?: return@rememberLauncherForActivityResult
+        val scannedChallengeUrl = result.contents?.trim()?.takeIf { it.isNotEmpty() }
+            ?: return@rememberLauncherForActivityResult
         challengeUrlInput = scannedChallengeUrl
         authSessionInfo = null
         errorMessage = null
@@ -121,35 +126,58 @@ fun SteamQrLoginScreen(
             ?.value
             ?.firstOrNull { it.token.id == selectedTokenId }
     }
+    val steps = remember(challengeUrlInput, selectedCandidate, authSessionInfo) {
+        listOf(
+            VaultStepItem(
+                title = context.getString(R.string.steam_qr_login_overview_scan),
+                state = when {
+                    challengeUrlInput.isNotBlank() || authSessionInfo != null -> VaultStepState.Complete
+                    else -> VaultStepState.Active
+                },
+            ),
+            VaultStepItem(
+                title = context.getString(R.string.steam_qr_login_overview_choose_account),
+                state = when {
+                    authSessionInfo != null -> VaultStepState.Complete
+                    selectedCandidate != null -> VaultStepState.Active
+                    else -> VaultStepState.Pending
+                },
+            ),
+            VaultStepItem(
+                title = context.getString(R.string.steam_qr_login_overview_approve),
+                state = if (authSessionInfo != null) VaultStepState.Active else VaultStepState.Pending,
+            ),
+        )
+    }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.steam_qr_login_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.steam_qr_login_title),
+                subtitle = stringResource(R.string.steam_qr_login_overview_description),
             )
         }
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.steam_qr_login_overview_title),
-                description = stringResource(R.string.steam_qr_login_overview_description),
-            ) {
-                ChecklistRow(
-                    label = stringResource(R.string.steam_qr_login_overview_scan),
-                    highlighted = true,
+            VaultProgressSteps(steps = steps)
+        }
+        statusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
                 )
-                ChecklistRow(
-                    label = stringResource(R.string.steam_qr_login_overview_choose_account),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.steam_qr_login_overview_approve),
-                    highlighted = true,
+            }
+        }
+        errorMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Error,
                 )
             }
         }
@@ -158,21 +186,7 @@ fun SteamQrLoginScreen(
                 title = stringResource(R.string.steam_qr_login_challenge_title),
                 description = stringResource(R.string.steam_qr_login_challenge_description),
             ) {
-                statusMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
-                errorMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                OutlinedTextField(
+                VaultTextField(
                     value = challengeUrlInput,
                     onValueChange = { nextValue ->
                         if (nextValue != challengeUrlInput) {
@@ -182,16 +196,12 @@ fun SteamQrLoginScreen(
                         }
                         challengeUrlInput = nextValue
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = {
-                        Text(stringResource(R.string.steam_qr_login_challenge_label))
-                    },
-                    supportingText = {
-                        Text(stringResource(R.string.steam_qr_login_challenge_supporting))
-                    },
+                    label = stringResource(R.string.steam_qr_login_challenge_label),
+                    supportingText = stringResource(R.string.steam_qr_login_challenge_supporting),
                     minLines = 3,
                 )
-                OutlinedButton(
+                VaultSecondaryButton(
+                    text = stringResource(R.string.token_list_action_steam_qr_login),
                     onClick = {
                         qrScanLauncher.launch(
                             ScanOptions()
@@ -202,21 +212,25 @@ fun SteamQrLoginScreen(
                         )
                     },
                     enabled = !isInspecting && !isResolving,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.token_list_action_steam_qr_login))
-                }
-                Button(
+                )
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isInspecting) {
+                            R.string.steam_qr_login_inspect_loading
+                        } else {
+                            R.string.steam_qr_login_inspect_action
+                        },
+                    ),
                     onClick = {
                         val candidate = selectedCandidate
                         val trimmedChallengeUrl = challengeUrlInput.trim()
                         if (trimmedChallengeUrl.isEmpty()) {
                             errorMessage = context.getString(R.string.steam_qr_login_url_required)
-                            return@Button
+                            return@VaultPrimaryButton
                         }
                         if (candidate == null) {
                             errorMessage = context.getString(R.string.steam_qr_login_account_required)
-                            return@Button
+                            return@VaultPrimaryButton
                         }
                         scope.launch {
                             isInspecting = true
@@ -241,23 +255,15 @@ fun SteamQrLoginScreen(
                         }
                     },
                     enabled = !isInspecting && !isResolving,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isInspecting) {
-                                R.string.steam_qr_login_inspect_loading
-                            } else {
-                                R.string.steam_qr_login_inspect_action
-                            },
-                        ),
-                    )
-                }
+                )
             }
         }
         when (val currentCandidatesState = candidatesState) {
             AppUiState.Loading -> item {
-                Text(stringResource(R.string.steam_qr_login_accounts_loading))
+                VaultInlineBanner(
+                    text = stringResource(R.string.steam_qr_login_accounts_loading),
+                    tone = VaultBannerTone.Neutral,
+                )
             }
 
             AppUiState.Empty -> item {
@@ -265,19 +271,17 @@ fun SteamQrLoginScreen(
                     title = stringResource(R.string.steam_qr_login_accounts_title),
                     description = stringResource(R.string.steam_qr_login_accounts_description),
                 ) {
-                    Text(
+                    VaultInlineBanner(
                         text = stringResource(R.string.steam_qr_login_accounts_empty),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tone = VaultBannerTone.Warning,
                     )
                 }
             }
 
             is AppUiState.Error -> item {
-                Text(
+                VaultInlineBanner(
                     text = currentCandidatesState.message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
 
@@ -312,32 +316,23 @@ fun SteamQrLoginScreen(
                             statusMessage = null
                         },
                     ) {
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_account_access_token_ready,
-                            ),
-                            highlighted = true,
-                        )
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_account_session_updated_at,
-                                candidate.session.updatedAt,
-                            ),
-                        )
-                        Text(
-                            text = stringResource(
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_qr_login_account_access_token_ready),
+                            value = stringResource(
                                 if (selected) {
                                     R.string.steam_qr_login_account_selected
                                 } else {
                                     R.string.steam_qr_login_account_select_action
                                 },
                             ),
+                        )
+                        Text(
+                            text = stringResource(
+                                R.string.steam_qr_login_account_session_updated_at,
+                                candidate.session.updatedAt,
+                            ),
                             style = MaterialTheme.typography.bodySmall,
-                            color = if (selected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -350,72 +345,78 @@ fun SteamQrLoginScreen(
                     description = stringResource(R.string.steam_qr_login_info_description),
                 ) {
                     info.deviceFriendlyName?.let { deviceFriendlyName ->
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_info_device,
-                                deviceFriendlyName,
-                            ),
-                            highlighted = true,
+                        Text(
+                            text = stringResource(R.string.steam_qr_login_info_device, deviceFriendlyName),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                     formatLocation(info)?.let { location ->
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_info_location,
-                                location,
-                            ),
-                            highlighted = true,
+                        Text(
+                            text = stringResource(R.string.steam_qr_login_info_location, location),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                     info.ip?.let { ip ->
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_info_ip,
-                                ip,
-                            ),
+                        Text(
+                            text = stringResource(R.string.steam_qr_login_info_ip, ip),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
-                    ChecklistRow(
-                        label = stringResource(
+                    Text(
+                        text = stringResource(
                             R.string.steam_qr_login_info_platform,
                             platformLabel(info.platformType),
                         ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                    ChecklistRow(
-                        label = stringResource(
+                    Text(
+                        text = stringResource(
                             R.string.steam_qr_login_info_version,
                             info.version,
                         ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                    ChecklistRow(
-                        label = stringResource(
+                    Text(
+                        text = stringResource(
                             R.string.steam_qr_login_info_client_id,
                             info.clientId.toString(),
                         ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                     if (info.requestorLocationMismatch) {
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_info_risk_location_mismatch,
-                            ),
+                        VaultInlineBanner(
+                            text = stringResource(R.string.steam_qr_login_info_risk_location_mismatch),
+                            tone = VaultBannerTone.Warning,
                         )
                     }
                     if (info.highUsageLogin) {
-                        ChecklistRow(
-                            label = stringResource(
-                                R.string.steam_qr_login_info_risk_high_usage,
-                            ),
+                        VaultInlineBanner(
+                            text = stringResource(R.string.steam_qr_login_info_risk_high_usage),
+                            tone = VaultBannerTone.Warning,
                         )
                     }
                     if (!info.requestorLocationMismatch && !info.highUsageLogin) {
-                        ChecklistRow(
-                            label = stringResource(R.string.steam_qr_login_info_risk_none),
-                            highlighted = true,
+                        VaultInlineBanner(
+                            text = stringResource(R.string.steam_qr_login_info_risk_none),
+                            tone = VaultBannerTone.Success,
                         )
                     }
-                    Button(
+                    VaultPrimaryButton(
+                        text = stringResource(
+                            if (isResolving) {
+                                R.string.steam_qr_login_action_loading
+                            } else {
+                                R.string.steam_qr_login_approve_action
+                            },
+                        ),
                         onClick = {
-                            val candidate = selectedCandidate ?: return@Button
+                            val candidate = selectedCandidate ?: return@VaultPrimaryButton
                             scope.launch {
                                 isResolving = true
                                 errorMessage = null
@@ -439,21 +440,11 @@ fun SteamQrLoginScreen(
                             }
                         },
                         enabled = !isResolving,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            stringResource(
-                                if (isResolving) {
-                                    R.string.steam_qr_login_action_loading
-                                } else {
-                                    R.string.steam_qr_login_approve_action
-                                },
-                            ),
-                        )
-                    }
-                    OutlinedButton(
+                    )
+                    VaultSecondaryButton(
+                        text = stringResource(R.string.steam_qr_login_reject_action),
                         onClick = {
-                            val candidate = selectedCandidate ?: return@OutlinedButton
+                            val candidate = selectedCandidate ?: return@VaultSecondaryButton
                             scope.launch {
                                 isResolving = true
                                 errorMessage = null
@@ -477,10 +468,7 @@ fun SteamQrLoginScreen(
                             }
                         },
                         enabled = !isResolving,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.steam_qr_login_reject_action))
-                    }
+                    )
                 }
             }
         }

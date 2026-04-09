@@ -3,44 +3,29 @@ package com.example.steam_vault_app.feature.importtoken
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.example.steam_vault_app.R
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultTextField
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ImportTokenScreen(
     onOpenSteamAddAuthenticator: () -> Unit,
@@ -68,93 +53,39 @@ fun ImportTokenScreen(
     val scaffoldJson = entryContext?.let(ImportTokenScaffoldFactory::buildExistingAuthenticatorJson)
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.route_title_steam_add_authenticator),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.import_modern_title),
+                subtitle = stringResource(R.string.import_modern_body),
             )
         }
 
-        // Recovery / Existing Authenticator Alert
         if (entryContext?.kind == ImportTokenEntryContext.Kind.EXISTING_AUTHENTICATOR) {
             item {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                    modifier = Modifier.fillMaxWidth()
+                ScreenSectionCard(
+                    title = stringResource(R.string.import_modern_existing_title),
+                    description = stringResource(R.string.import_modern_existing_body),
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Warning, contentDescription = "Warning", tint = MaterialTheme.colorScheme.error)
-                            Text(
-                                text = stringResource(R.string.import_existing_authenticator_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.import_existing_authenticator_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                        )
-                        scaffoldJson?.let { scaffold ->
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = {
-                                    clipboardManager.setText(AnnotatedString(scaffold))
-                                    helperMessage = context.getString(R.string.import_existing_authenticator_scaffold_copied)
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(stringResource(R.string.import_existing_authenticator_scaffold_copy_action))
-                            }
-                        }
+                    scaffoldJson?.let { scaffold ->
                         helperMessage?.let { message ->
-                            Text(
+                            VaultInlineBanner(
                                 text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 8.dp)
+                                tone = VaultBannerTone.Success,
                             )
                         }
-                    }
-                }
-            }
-        }
-
-        // Selection Cards
-        item {
-            Card(
-                onClick = onOpenSteamAddAuthenticator,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.AccountCircle,
-                        contentDescription = "Steam",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                        Text(
-                            text = stringResource(R.string.import_login_path_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        )
-                        Text(
-                            text = stringResource(R.string.import_login_path_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.import_existing_authenticator_scaffold_copy_action),
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(scaffold))
+                                helperMessage = context.getString(
+                                    R.string.import_existing_authenticator_scaffold_copied,
+                                )
+                            },
                         )
                     }
                 }
@@ -162,75 +93,75 @@ fun ImportTokenScreen(
         }
 
         item {
-            Card(
-                onClick = { showManualForm = !showManualForm },
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                modifier = Modifier.fillMaxWidth()
+            ScreenSectionCard(
+                title = stringResource(R.string.import_modern_login_title),
+                description = stringResource(R.string.import_modern_login_body),
             ) {
-                Row(
-                    modifier = Modifier.padding(20.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.List,
-                        contentDescription = "Code",
-                        modifier = Modifier.size(48.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Column(modifier = Modifier.padding(start = 16.dp)) {
-                        Text(
-                            text = stringResource(R.string.import_fallback_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = stringResource(R.string.import_fallback_description),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                VaultPrimaryButton(
+                    text = stringResource(R.string.import_modern_login_action),
+                    onClick = onOpenSteamAddAuthenticator,
+                )
+            }
+        }
+
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.import_modern_manual_title),
+                description = stringResource(R.string.import_modern_manual_body),
+            ) {
+                VaultSecondaryButton(
+                    text = stringResource(
+                        if (showManualForm) {
+                            R.string.import_modern_manual_hide_action
+                        } else {
+                            R.string.import_modern_manual_show_action
+                        },
+                    ),
+                    onClick = { showManualForm = !showManualForm },
+                )
+            }
+        }
+
+        errorMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Error,
+                )
             }
         }
 
         if (showManualForm || errorMessage != null) {
-            errorMessage?.let { message ->
-                item {
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
-                }
-            }
-
             item {
                 ScreenSectionCard(
-                    title = stringResource(R.string.import_form_title),
-                    description = stringResource(R.string.import_fallback_note),
+                    title = stringResource(R.string.import_modern_form_title),
+                    description = stringResource(R.string.import_modern_form_body),
                 ) {
-                    OutlinedTextField(
+                    VaultTextField(
                         value = rawPayload,
                         onValueChange = { rawPayload = it },
-                        modifier = Modifier.fillMaxWidth(),
+                        label = stringResource(R.string.import_modern_field_payload),
+                        placeholder = stringResource(R.string.import_modern_field_payload_placeholder),
                         minLines = 4,
-                        label = { Text(stringResource(R.string.import_label_raw_payload)) },
-                        placeholder = { Text(stringResource(R.string.import_placeholder_raw_payload)) },
                     )
-                    OutlinedTextField(
+                    VaultTextField(
                         value = manualAccountName,
                         onValueChange = { manualAccountName = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.import_label_manual_account_name)) },
+                        label = stringResource(R.string.import_modern_field_account),
                     )
-                    OutlinedTextField(
+                    VaultTextField(
                         value = manualSharedSecret,
                         onValueChange = { manualSharedSecret = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.import_label_manual_shared_secret)) },
+                        label = stringResource(R.string.import_modern_field_secret),
                     )
-                    Button(
+                    VaultPrimaryButton(
+                        text = stringResource(
+                            if (isSubmitting) {
+                                R.string.import_modern_save_action_loading
+                            } else {
+                                R.string.import_modern_save_action
+                            },
+                        ),
                         onClick = {
                             onSaveImport(rawPayload, manualAccountName, manualSharedSecret)
                         },
@@ -238,24 +169,24 @@ fun ImportTokenScreen(
                             rawPayload.isNotBlank() ||
                                 (manualAccountName.isNotBlank() && manualSharedSecret.isNotBlank())
                             ),
-                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    ) {
-                        Text(
-                            stringResource(
-                                if (isSubmitting) R.string.import_action_loading else R.string.import_action_idle
-                            ),
-                        )
-                    }
+                    )
                 }
             }
         }
 
         item {
-            OutlinedButton(
-                onClick = onOpenSteamBrowserLogin,
-                modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(stringResource(R.string.import_login_path_browser_fallback_action))
+                VaultSecondaryButton(
+                    text = stringResource(R.string.import_modern_browser_fallback),
+                    onClick = onOpenSteamBrowserLogin,
+                )
+                Text(
+                    text = stringResource(R.string.import_modern_footer_note),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

@@ -1,16 +1,8 @@
 package com.example.steam_vault_app.feature.importtoken
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -31,6 +23,16 @@ import com.example.steam_vault_app.domain.repository.SteamAuthenticatorBindingCo
 import com.example.steam_vault_app.domain.repository.SteamAuthenticatorEnrollmentDraftRepository
 import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultProgressSteps
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultSensitiveValueRow
+import com.example.steam_vault_app.ui.common.VaultStepItem
+import com.example.steam_vault_app.ui.common.VaultStepState
+import com.example.steam_vault_app.ui.common.VaultTextField
 import java.time.Instant
 import kotlinx.coroutines.launch
 
@@ -81,6 +83,38 @@ fun SteamAddAuthenticatorScreen(
     val bindingPreparation = effectiveDraft?.let { draft ->
         runCatching { SteamAuthenticatorBindingPreparationFactory.from(draft) }.getOrNull()
     }
+    val progressSteps = remember(
+        currentUrlInput,
+        storedBindingContext,
+        storedDraft,
+        activeDraft,
+        bindingPreparation,
+    ) {
+        listOf(
+            VaultStepItem(
+                title = context.getString(R.string.steam_add_authenticator_browser_title),
+                subtitle = context.getString(R.string.steam_add_authenticator_browser_description),
+                state = when {
+                    currentUrlInput.isNotBlank() || storedBindingContext != null -> VaultStepState.Complete
+                    else -> VaultStepState.Active
+                },
+            ),
+            VaultStepItem(
+                title = context.getString(R.string.steam_add_authenticator_saved_draft_title),
+                subtitle = context.getString(R.string.steam_add_authenticator_saved_draft_description),
+                state = when {
+                    storedDraft != null -> VaultStepState.Complete
+                    activeDraft != null -> VaultStepState.Active
+                    else -> VaultStepState.Pending
+                },
+            ),
+            VaultStepItem(
+                title = context.getString(R.string.steam_add_authenticator_binding_ready_title),
+                subtitle = context.getString(R.string.steam_add_authenticator_binding_ready_description),
+                state = if (bindingPreparation != null) VaultStepState.Active else VaultStepState.Pending,
+            ),
+        )
+    }
 
     LaunchedEffect(bindingContextRepository, enrollmentDraftRepository) {
         storedDraftError = null
@@ -111,65 +145,64 @@ fun SteamAddAuthenticatorScreen(
     }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.steam_add_authenticator_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.steam_add_authenticator_title),
+                subtitle = stringResource(R.string.steam_add_authenticator_browser_description),
             )
+        }
+        item {
+            VaultProgressSteps(steps = progressSteps)
+        }
+        statusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
+                )
+            }
+        }
+        errorMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Error,
+                )
+            }
+        }
+        storedDraftError?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Warning,
+                )
+            }
         }
         item {
             ScreenSectionCard(
                 title = stringResource(R.string.steam_add_authenticator_browser_title),
                 description = stringResource(R.string.steam_add_authenticator_browser_description),
             ) {
-                Text(
-                    text = stringResource(
+                ChecklistRow(
+                    label = stringResource(
                         R.string.steam_add_authenticator_browser_login_url,
                         SteamExternalBrowserLoginManager.loginUri.toString(),
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    highlighted = true,
                 )
-                Text(
-                    text = stringResource(
+                ChecklistRow(
+                    label = stringResource(
                         R.string.steam_add_authenticator_browser_callback_url,
                         SteamExternalBrowserLoginManager.callbackUri.toString(),
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(
-                    text = stringResource(R.string.steam_add_authenticator_browser_separation_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-                statusMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
-                errorMessage?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                storedDraftError?.let { message ->
-                    Text(
-                        text = message,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(R.string.steam_add_authenticator_browser_open_action),
                     onClick = {
                         SteamExternalBrowserLoginManager.openLogin(context)
                         statusMessage = context.getString(
@@ -177,9 +210,33 @@ fun SteamAddAuthenticatorScreen(
                         )
                         errorMessage = null
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+        storedBindingContext?.let { bindingContext ->
+            item {
+                ScreenSectionCard(
+                    title = stringResource(R.string.steam_add_authenticator_session_title),
+                    description = stringResource(R.string.steam_add_authenticator_session_description),
                 ) {
-                    Text(stringResource(R.string.steam_add_authenticator_browser_open_action))
+                    bindingContext.accountName?.let { accountName ->
+                        ChecklistRow(
+                            label = accountName,
+                            highlighted = true,
+                        )
+                    }
+                    VaultSensitiveValueRow(
+                        label = stringResource(R.string.steam_session_editor_session_id_label),
+                        value = maskSensitiveValue(context, bindingContext.session.sessionId),
+                        copyDescription = stringResource(R.string.steam_session_editor_session_id_label),
+                        onCopy = null,
+                    )
+                    ChecklistRow(
+                        label = stringResource(
+                            R.string.steam_add_authenticator_saved_draft_captured_at,
+                            bindingContext.capturedAt,
+                        ),
+                    )
                 }
             }
         }
@@ -188,96 +245,81 @@ fun SteamAddAuthenticatorScreen(
                 title = stringResource(R.string.steam_add_authenticator_manual_title),
                 description = stringResource(R.string.steam_add_authenticator_manual_description),
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = steamIdInput,
-                        onValueChange = { steamIdInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.steam_session_editor_steam_id_label)) },
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = sessionIdInput,
-                        onValueChange = { sessionIdInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.steam_session_editor_session_id_label)) },
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = oauthTokenInput,
-                        onValueChange = { oauthTokenInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.steam_session_editor_oauth_token_label)) },
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = currentUrlInput,
-                        onValueChange = { currentUrlInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = {
-                            Text(stringResource(R.string.steam_add_authenticator_manual_current_url_label))
-                        },
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = rawCookiesInput,
-                        onValueChange = { rawCookiesInput = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text(stringResource(R.string.steam_session_editor_cookies_label)) },
-                        supportingText = {
-                            Text(stringResource(R.string.steam_session_editor_cookies_supporting))
-                        },
-                        minLines = 4,
-                    )
-                    Button(
-                        onClick = {
-                            val draftToSave = activeDraft
-                            if (draftToSave == null) {
-                                errorMessage = context.getString(
-                                    R.string.steam_add_authenticator_manual_required,
-                                )
-                                statusMessage = null
-                                return@Button
-                            }
-                            scope.launch {
-                                try {
-                                    enrollmentDraftRepository.saveDraft(draftToSave)
-                                    storedDraft = draftToSave
-                                    lastPersistedDraftSignature = draftToSave.signature
-                                    storedDraftError = null
-                                    statusMessage = context.getString(
-                                        R.string.steam_add_authenticator_saved_draft_saved,
-                                    )
-                                    errorMessage = null
-                                } catch (error: Exception) {
-                                    errorMessage = error.message
-                                        ?: context.getString(
-                                            R.string.steam_add_authenticator_saved_draft_save_failed,
-                                        )
-                                    statusMessage = null
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.steam_add_authenticator_manual_save_action))
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            steamIdInput = ""
-                            sessionIdInput = ""
-                            oauthTokenInput = ""
-                            currentUrlInput = ""
-                            rawCookiesInput = ""
-                            capturedAtInput = ""
+                VaultTextField(
+                    value = steamIdInput,
+                    onValueChange = { steamIdInput = it },
+                    label = stringResource(R.string.steam_session_editor_steam_id_label),
+                    singleLine = true,
+                )
+                VaultTextField(
+                    value = sessionIdInput,
+                    onValueChange = { sessionIdInput = it },
+                    label = stringResource(R.string.steam_session_editor_session_id_label),
+                    singleLine = true,
+                )
+                VaultTextField(
+                    value = oauthTokenInput,
+                    onValueChange = { oauthTokenInput = it },
+                    label = stringResource(R.string.steam_session_editor_oauth_token_label),
+                    singleLine = true,
+                )
+                VaultTextField(
+                    value = currentUrlInput,
+                    onValueChange = { currentUrlInput = it },
+                    label = stringResource(R.string.steam_add_authenticator_manual_current_url_label),
+                    singleLine = true,
+                )
+                VaultTextField(
+                    value = rawCookiesInput,
+                    onValueChange = { rawCookiesInput = it },
+                    label = stringResource(R.string.steam_session_editor_cookies_label),
+                    supportingText = stringResource(R.string.steam_session_editor_cookies_supporting),
+                    minLines = 4,
+                )
+                VaultPrimaryButton(
+                    text = stringResource(R.string.steam_add_authenticator_manual_save_action),
+                    onClick = {
+                        val draftToSave = activeDraft
+                        if (draftToSave == null) {
+                            errorMessage = context.getString(
+                                R.string.steam_add_authenticator_manual_required,
+                            )
                             statusMessage = null
-                            errorMessage = null
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.steam_add_authenticator_manual_clear_action))
-                    }
-                }
+                            return@VaultPrimaryButton
+                        }
+                        scope.launch {
+                            try {
+                                enrollmentDraftRepository.saveDraft(draftToSave)
+                                storedDraft = draftToSave
+                                lastPersistedDraftSignature = draftToSave.signature
+                                storedDraftError = null
+                                statusMessage = context.getString(
+                                    R.string.steam_add_authenticator_saved_draft_saved,
+                                )
+                                errorMessage = null
+                            } catch (error: Exception) {
+                                errorMessage = error.message
+                                    ?: context.getString(
+                                        R.string.steam_add_authenticator_saved_draft_save_failed,
+                                    )
+                                statusMessage = null
+                            }
+                        }
+                    },
+                )
+                VaultSecondaryButton(
+                    text = stringResource(R.string.steam_add_authenticator_manual_clear_action),
+                    onClick = {
+                        steamIdInput = ""
+                        sessionIdInput = ""
+                        oauthTokenInput = ""
+                        currentUrlInput = ""
+                        rawCookiesInput = ""
+                        capturedAtInput = ""
+                        statusMessage = null
+                        errorMessage = null
+                    },
+                )
             }
         }
         storedDraft?.let { draft ->
@@ -289,47 +331,39 @@ fun SteamAddAuthenticatorScreen(
                     ),
                 ) {
                     draft.steamId?.let { steamId ->
-                        Text(
-                            text = stringResource(
+                        ChecklistRow(
+                            label = stringResource(
                                 R.string.steam_add_authenticator_saved_draft_steam_id,
                                 steamId,
                             ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            highlighted = true,
                         )
                     }
-                    Text(
-                        text = stringResource(
+                    VaultSensitiveValueRow(
+                        label = stringResource(R.string.steam_add_authenticator_saved_draft_session_id),
+                        value = maskSensitiveValue(context, draft.sessionId),
+                        copyDescription = stringResource(
                             R.string.steam_add_authenticator_saved_draft_session_id,
                             maskSensitiveValue(context, draft.sessionId),
                         ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        onCopy = null,
                     )
-                    Text(
-                        text = stringResource(
+                    ChecklistRow(
+                        label = stringResource(
                             R.string.steam_add_authenticator_saved_draft_captured_at,
                             draft.capturedAt,
                         ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(
-                        text = stringResource(
+                    ChecklistRow(
+                        label = stringResource(
                             R.string.steam_add_authenticator_saved_draft_source_url,
                             draft.currentUrl,
                         ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Text(
+                    VaultPrimaryButton(
                         text = stringResource(
-                            R.string.steam_add_authenticator_saved_draft_cookie_note,
+                            R.string.steam_add_authenticator_saved_draft_load_action,
                         ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    Button(
                         onClick = {
                             steamIdInput = draft.steamId.orEmpty()
                             sessionIdInput = draft.sessionId
@@ -343,15 +377,11 @@ fun SteamAddAuthenticatorScreen(
                                 R.string.steam_add_authenticator_saved_draft_restored,
                             )
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.steam_add_authenticator_saved_draft_load_action,
-                            ),
-                        )
-                    }
-                    OutlinedButton(
+                    )
+                    VaultSecondaryButton(
+                        text = stringResource(
+                            R.string.steam_add_authenticator_saved_draft_clear_action,
+                        ),
                         onClick = {
                             scope.launch {
                                 try {
@@ -374,61 +404,6 @@ fun SteamAddAuthenticatorScreen(
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.steam_add_authenticator_saved_draft_clear_action,
-                            ),
-                        )
-                    }
-                }
-            }
-        }
-        activeDraft?.let { draft ->
-            item {
-                ScreenSectionCard(
-                    title = stringResource(R.string.steam_add_authenticator_session_title),
-                    description = stringResource(R.string.steam_add_authenticator_session_description),
-                ) {
-                    draft.steamId?.let { steamId ->
-                        Text(
-                            text = stringResource(
-                                R.string.steam_add_authenticator_session_steam_id,
-                                steamId,
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                    Text(
-                        text = stringResource(
-                            R.string.steam_add_authenticator_session_session_id,
-                            maskSensitiveValue(context, draft.sessionId),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.steam_add_authenticator_saved_draft_captured_at,
-                            draft.capturedAt,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(
-                            R.string.steam_add_authenticator_session_current_url,
-                            draft.currentUrl,
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = stringResource(R.string.steam_add_authenticator_session_note),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
@@ -442,16 +417,14 @@ fun SteamAddAuthenticatorScreen(
                     ),
                 ) {
                     ChecklistRow(
-                        label = if (!draft.sessionId.isBlank()) {
-                            stringResource(
-                                R.string.steam_add_authenticator_binding_ready_check_session,
-                            )
-                        } else {
-                            stringResource(
-                                R.string.steam_authenticator_binding_check_not_ready,
-                            )
-                        },
-                        highlighted = !draft.sessionId.isBlank(),
+                        label = stringResource(
+                            if (draft.sessionId.isNotBlank()) {
+                                R.string.steam_add_authenticator_binding_ready_check_session
+                            } else {
+                                R.string.steam_authenticator_binding_check_not_ready
+                            },
+                        ),
+                        highlighted = draft.sessionId.isNotBlank(),
                     )
                     bindingPreparation?.let { preparation ->
                         ChecklistRow(
@@ -495,13 +468,10 @@ fun SteamAddAuthenticatorScreen(
                         ),
                         highlighted = true,
                     )
-                    ChecklistRow(
-                        label = stringResource(
-                            R.string.steam_add_authenticator_binding_ready_check_next_step,
+                    VaultPrimaryButton(
+                        text = stringResource(
+                            R.string.steam_add_authenticator_binding_open_action,
                         ),
-                        highlighted = true,
-                    )
-                    Button(
                         onClick = {
                             scope.launch {
                                 val draftToOpen = activeDraft ?: storedDraft ?: return@launch
@@ -525,14 +495,7 @@ fun SteamAddAuthenticatorScreen(
                                 onOpenBindingPreparation()
                             }
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            stringResource(
-                                R.string.steam_add_authenticator_binding_open_action,
-                            ),
-                        )
-                    }
+                    )
                 }
             }
         }

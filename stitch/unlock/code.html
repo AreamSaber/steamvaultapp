@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SteamVault - 解锁</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005FB7",
+                        "on-primary": "#FFFFFF",
+                        "primary-container": "#D6E3FF",
+                        "on-primary-container": "#001B3C",
+                        "surface": "#1A1C1E",
+                        "on-surface": "#E2E2E5",
+                        "surface-variant": "#414752",
+                        "on-surface-variant": "#C1C6D4",
+                        "background": "#121416",
+                        "outline": "#8C919D",
+                        "error": "#BA1A1A",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "md": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "manrope": ["Manrope", "sans-serif"],
+                        "sans": ["Manrope", "Inter", "sans-serif"],
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #121416;
+            color: #E2E2E5;
+            font-family: 'Manrope', sans-serif;
+            min-height: 100dvh;
+        }
+        .monolith-gradient {
+            background: radial-gradient(circle at 50% -20%, #1A1C1E 0%, #121416 100%);
+        }
+        .biometric-ring {
+            position: relative;
+        }
+        .biometric-ring::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 2px solid rgba(0, 95, 183, 0.2);
+            border-radius: 50%;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: .3; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body class="flex flex-col monolith-gradient overflow-hidden">
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-20 bg-background/80 backdrop-blur-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-2xl" data-icon="shield">shield</span>
+<span class="font-manrope font-extrabold text-xl tracking-tight text-on-surface">SteamVault</span>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-variant/30 rounded-full transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<main class="flex-grow flex flex-col items-center justify-center px-6 pt-24 pb-12 max-w-md mx-auto w-full">
+<!-- Brand Identity -->
+<div class="text-center mb-10">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-6">
+<span class="material-symbols-outlined text-primary text-4xl" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<h1 class="text-2xl font-bold text-on-surface mb-2">安全验证</h1>
+<p class="text-on-surface-variant text-sm">请输入主密码解锁令牌库</p>
+</div>
+<!-- Unlock Form -->
+<div class="w-full space-y-10">
+<!-- Biometric Entry (Prominent) -->
+<div class="flex flex-col items-center justify-center">
+<button class="biometric-ring group relative flex flex-col items-center justify-center w-32 h-32 rounded-full bg-surface-variant/20 hover:bg-surface-variant/40 active:scale-95 transition-all duration-300">
+<span class="material-symbols-outlined text-primary text-6xl group-hover:scale-110 transition-transform" data-icon="fingerprint">fingerprint</span>
+</button>
+<span class="mt-6 font-manrope text-xs font-semibold uppercase tracking-[0.2em] text-primary">生物识别解锁</span>
+</div>
+<!-- Password Input -->
+<div class="space-y-4">
+<div class="relative group">
+<input class="w-full h-14 px-4 bg-surface rounded-xl border border-outline/20 text-center font-sans text-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all placeholder:text-outline/40" placeholder="输入主密码" type="password"/>
+</div>
+<button class="w-full h-14 bg-primary text-white font-semibold text-base rounded-xl active:scale-[0.98] transition-transform shadow-lg shadow-primary/20">
+                    验证并解锁
+                </button>
+</div>
+</div>
+<!-- Footer Actions -->
+<footer class="mt-auto pt-10">
+<button class="text-sm font-medium text-on-surface-variant hover:text-primary transition-colors">
+                忘记密码？从备份恢复
+            </button>
+</footer>
+</main>
+<!-- Ambient Background Decorations -->
+<div class="fixed -top-24 -left-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none"></div>
+<div class="fixed -bottom-24 -right-24 w-96 h-96 bg-primary/10 blur-[120px] rounded-full pointer-events-none"></div>
+</body></html>

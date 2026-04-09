@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SteamVault - 令牌</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed-variant": "#324769",
+                    "surface-container-low": "#1a1c1e",
+                    "error-container": "#93000a",
+                    "error": "#ffb4ab",
+                    "on-background": "#e2e2e5",
+                    "secondary-container": "#324769",
+                    "surface-tint": "#a8c8ff",
+                    "outline": "#8c919d",
+                    "outline-variant": "#414752",
+                    "on-primary-fixed": "#001b3c",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-secondary-fixed": "#011b3b",
+                    "on-secondary-container": "#a0b6de",
+                    "on-primary-fixed-variant": "#00468a",
+                    "primary-fixed-dim": "#a8c8ff",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "primary-fixed": "#d6e3ff",
+                    "on-tertiary": "#542100",
+                    "surface-dim": "#121416",
+                    "surface-bright": "#37393b",
+                    "on-error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#ffb68f",
+                    "on-surface": "#e2e2e5",
+                    "surface-container-lowest": "#0c0e10",
+                    "surface": "#121416",
+                    "background": "#121416",
+                    "secondary": "#b2c7f0",
+                    "on-surface-variant": "#c1c6d4",
+                    "on-tertiary-fixed-variant": "#773200",
+                    "on-primary": "#003062",
+                    "tertiary": "#ffb68f",
+                    "primary": "#005FB7",
+                    "surface-variant": "#333537",
+                    "surface-container-high": "#282a2c",
+                    "primary-container": "#005fb7",
+                    "on-tertiary-container": "#ffd1bb",
+                    "on-error": "#690005",
+                    "surface-container": "#1e2022",
+                    "on-tertiary-fixed": "#331100",
+                    "on-secondary": "#1a3151",
+                    "on-primary-container": "#c9dbff",
+                    "tertiary-fixed": "#ffdbca",
+                    "tertiary-container": "#9f4500",
+                    "inverse-primary": "#005eb4",
+                    "inverse-surface": "#e2e2e5",
+                    "inverse-on-surface": "#2f3133",
+                    "surface-container-highest": "#333537"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "3xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"],
+                    "mono": ["JetBrains Mono"]
+            }
+          },
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .token-pulse {
+            background: radial-gradient(circle, rgba(0, 95, 183, 0.15) 0%, rgba(0, 95, 183, 0) 70%);
+        }
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen pb-24">
+<!-- TopAppBar Shell (per COMPONENTS_3) -->
+<header class="bg-[#121416] w-full top-0 sticky z-50 flex justify-between items-center px-6 h-16 w-full">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#005FB7] dark:text-[#a8c8ff]" data-icon="shield">shield</span>
+<h1 class="font-manrope tracking-tight font-extrabold uppercase text-xl tracking-tighter text-[#005FB7] dark:text-[#a8c8ff]">The Vault</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-[#1a1c1e] transition-colors p-2 rounded-full active:scale-95 duration-150">
+<span class="material-symbols-outlined text-gray-500" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="px-6 pt-8 max-w-2xl mx-auto">
+<!-- Editorial Header (per TEXT_11 guidelines) -->
+<div class="mb-10">
+<h2 class="text-4xl font-headline font-extrabold tracking-tight mb-2">令牌库</h2>
+<p class="text-on-surface-variant font-medium">点击卡片复制验证码，长按进入管理。</p>
+</div>
+<!-- Token List (Bento Layout) -->
+<div class="grid gap-4">
+<!-- Token Card 1: Gaben (Primary State) -->
+<div class="bg-surface-container-low rounded-3xl p-6 relative overflow-hidden group hover:bg-surface-container transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<div>
+<span class="text-xs font-bold text-primary tracking-widest uppercase mb-1 block">账户</span>
+<h3 class="text-xl font-headline font-bold">Gaben</h3>
+</div>
+<div class="relative w-10 h-10 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-surface-container-high" cx="20" cy="20" fill="transparent" r="18" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-primary" cx="20" cy="20" fill="transparent" r="18" stroke="currentColor" stroke-dasharray="113" stroke-dashoffset="30" stroke-width="3"></circle>
+</svg>
+<span class="text-[10px] font-bold text-primary">22s</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="bg-surface-container-lowest rounded-2xl px-6 py-4 inline-block">
+<span class="font-mono text-5xl tracking-widest font-bold text-on-surface">R8K7W</span>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-bright text-on-surface px-5 py-3 rounded-2xl flex items-center gap-2 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="content_copy">content_copy</span>
+<span class="font-label text-sm font-semibold">复制</span>
+</button>
+</div>
+<div class="absolute -right-4 -top-4 w-24 h-24 token-pulse rounded-full opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</div>
+<!-- Token Card 2: Valve_Official (Warning State) -->
+<div class="bg-surface-container-low rounded-3xl p-6 relative overflow-hidden group hover:bg-surface-container transition-all duration-300">
+<div class="flex justify-between items-start mb-6">
+<div>
+<span class="text-xs font-bold text-tertiary tracking-widest uppercase mb-1 block">即将过期</span>
+<h3 class="text-xl font-headline font-bold">Valve_Official</h3>
+</div>
+<div class="relative w-10 h-10 flex items-center justify-center">
+<svg class="absolute inset-0 w-full h-full -rotate-90">
+<circle class="text-surface-container-high" cx="20" cy="20" fill="transparent" r="18" stroke="currentColor" stroke-width="3"></circle>
+<circle class="text-tertiary" cx="20" cy="20" fill="transparent" r="18" stroke="currentColor" stroke-dasharray="113" stroke-dashoffset="100" stroke-width="3"></circle>
+</svg>
+<span class="text-[10px] font-bold text-tertiary">4s</span>
+</div>
+</div>
+<div class="flex items-end justify-between">
+<div class="bg-surface-container-lowest rounded-2xl px-6 py-4 inline-block">
+<span class="font-mono text-5xl tracking-widest font-bold text-on-surface opacity-50">3B9DX</span>
+</div>
+<button class="bg-surface-container-high hover:bg-surface-bright text-on-surface px-5 py-3 rounded-2xl flex items-center gap-2 transition-colors active:scale-95">
+<span class="material-symbols-outlined text-xl" data-icon="content_copy">content_copy</span>
+<span class="font-label text-sm font-semibold">复制</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Security Info Section -->
+<div class="mt-12 p-8 rounded-3xl bg-surface-container-lowest border border-outline-variant/10 text-center">
+<div class="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/5">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="add_moderator">add_moderator</span>
+</div>
+<h4 class="text-lg font-headline font-bold mb-2">安防即是无声</h4>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">SteamVault 使用军事级加密，确保您的账户私钥永远不会离开此设备。</p>
+<button class="w-full bg-primary text-white py-4 rounded-full font-bold text-sm tracking-wide hover:opacity-90 transition-opacity active:scale-95">
+            添加账户
+        </button>
+</div>
+</main>
+<!-- BottomNavBar Shell (per COMPONENTS_3) -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-3xl bg-[#121416]/60 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,95,183,0.06)] flex justify-around items-center h-20 px-4 pb-4">
+<!-- Tokens Tab (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#005FB7] text-white rounded-full px-6 py-2 active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="key" style="font-variation-settings: 'FILL' 1;">key</span>
+<span class="font-inter text-xs font-semibold">令牌</span>
+</a>
+<!-- Add Tab -->
+<a class="flex flex-col items-center justify-center text-gray-400 opacity-60 hover:opacity-100 transition-opacity active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-inter text-xs font-semibold">添加</span>
+</a>
+<!-- Settings Tab -->
+<a class="flex flex-col items-center justify-center text-gray-400 opacity-60 hover:opacity-100 transition-opacity active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-inter text-xs font-semibold">设置</span>
+</a>
+</nav>
+<!-- Background Decorative Elements (per DESIGN_SYSTEM_1) -->
+<div class="fixed top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-0 left-0 w-[300px] h-[300px] bg-tertiary/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+</body></html>

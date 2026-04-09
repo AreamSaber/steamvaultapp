@@ -8,10 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -53,6 +50,17 @@ import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.domain.security.VaultCryptography
 import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultKeyValueRow
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultProgressSteps
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultSensitiveValueRow
+import com.example.steam_vault_app.ui.common.VaultStepItem
+import com.example.steam_vault_app.ui.common.VaultStepState
+import com.example.steam_vault_app.ui.common.VaultTextField
 import java.time.Instant
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -649,27 +657,62 @@ fun SteamAuthenticatorBindingScreen(
         }
     }
 
+    val progressSteps = listOf(
+        VaultStepItem(
+            title = context.getString(R.string.steam_authenticator_binding_session_title),
+            subtitle = context.getString(R.string.steam_authenticator_binding_session_description),
+            state = when {
+                preparation != null -> VaultStepState.Complete
+                storedBindingContext != null || storedDraft != null -> VaultStepState.Active
+                else -> VaultStepState.Pending
+            },
+        ),
+        VaultStepItem(
+            title = context.getString(R.string.steam_authenticator_binding_begin_title),
+            subtitle = context.getString(R.string.steam_authenticator_binding_begin_description),
+            state = when {
+                beginResult != null -> VaultStepState.Complete
+                preparation?.isReadyForBinding == true -> VaultStepState.Active
+                else -> VaultStepState.Pending
+            },
+        ),
+        VaultStepItem(
+            title = context.getString(R.string.steam_authenticator_binding_activation_title),
+            subtitle = context.getString(R.string.steam_authenticator_binding_activation_description),
+            state = when {
+                beginResult?.fullyEnrolled == true -> VaultStepState.Complete
+                beginResult != null || showPhoneRecoveryCard -> VaultStepState.Active
+                else -> VaultStepState.Pending
+            },
+        ),
+    )
+
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.steam_authenticator_binding_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.steam_authenticator_binding_title),
+                subtitle = stringResource(R.string.steam_authenticator_binding_overview_description),
             )
         }
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.steam_authenticator_binding_overview_title),
-                description = stringResource(R.string.steam_authenticator_binding_overview_description),
-            ) {
-                Text(
-                    text = stringResource(R.string.steam_authenticator_binding_overview_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+            VaultProgressSteps(steps = progressSteps)
+        }
+        item {
+            VaultInlineBanner(
+                text = stringResource(R.string.steam_authenticator_binding_overview_note),
+                tone = VaultBannerTone.Neutral,
+            )
+        }
+        loadError?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Warning,
                 )
             }
         }
@@ -682,12 +725,10 @@ fun SteamAuthenticatorBindingScreen(
                             R.string.steam_authenticator_binding_missing_draft_description,
                         ),
                 ) {
-                    Button(
+                    VaultPrimaryButton(
+                        text = stringResource(R.string.steam_authenticator_binding_return_action),
                         onClick = onReturnToSignIn,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.steam_authenticator_binding_return_action))
-                    }
+                    )
                 }
             }
         } else {
@@ -697,15 +738,13 @@ fun SteamAuthenticatorBindingScreen(
                         title = stringResource(R.string.steam_authenticator_binding_parse_failed_title),
                         description = preparationError
                             ?: stringResource(
-                                R.string.steam_authenticator_binding_parse_failed_description,
-                            ),
+                            R.string.steam_authenticator_binding_parse_failed_description,
+                        ),
                     ) {
-                        Button(
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.steam_authenticator_binding_return_action),
                             onClick = onReturnToSignIn,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_authenticator_binding_return_action))
-                        }
+                        )
                     }
                 }
             }
@@ -718,32 +757,23 @@ fun SteamAuthenticatorBindingScreen(
                         ),
                     ) {
                         bindingPreparation.resolvedSteamId?.let { steamId ->
-                            Text(
-                                text = stringResource(
-                                    R.string.steam_authenticator_binding_steam_id,
-                                    steamId,
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            VaultKeyValueRow(
+                                label = stringResource(R.string.steam_session_detail_steam_id),
+                                value = steamId,
                             )
                         }
                         bindingPreparation.accountName?.let { accountName ->
-                            Text(
-                                text = stringResource(
-                                    R.string.steam_authenticator_binding_account_name,
-                                    accountName,
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            VaultKeyValueRow(
+                                label = stringResource(R.string.import_label_manual_account_name),
+                                value = accountName,
                             )
                         }
-                        Text(
-                            text = stringResource(
-                                R.string.steam_authenticator_binding_session_id,
-                                bindingPreparation.sessionId,
+                        VaultSensitiveValueRow(
+                            label = stringResource(R.string.steam_session_editor_session_id_label),
+                            value = bindingPreparation.sessionId,
+                            copyDescription = stringResource(
+                                R.string.steam_session_editor_session_id_label,
                             ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Text(
                             text = stringResource(
@@ -754,21 +784,18 @@ fun SteamAuthenticatorBindingScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         if (bindingPreparation.currentUrl != null) {
-                            Text(
-                                text = stringResource(
-                                    R.string.steam_authenticator_binding_source_url,
-                                    bindingPreparation.currentUrl,
+                            VaultKeyValueRow(
+                                label = stringResource(
+                                    R.string.steam_add_authenticator_manual_current_url_label,
                                 ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                value = bindingPreparation.currentUrl,
                             )
                         } else {
-                            Text(
+                            VaultInlineBanner(
                                 text = stringResource(
                                     R.string.steam_authenticator_binding_source_kind_protocol_login,
                                 ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                tone = VaultBannerTone.Neutral,
                             )
                         }
                     }
@@ -849,34 +876,22 @@ fun SteamAuthenticatorBindingScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         bindingPreparation.generatedDeviceId?.let { deviceId ->
-                            Text(
-                                text = stringResource(
-                                    R.string.steam_authenticator_binding_generated_device_id,
-                                    deviceId,
-                                ),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            VaultSensitiveValueRow(
+                                label = stringResource(R.string.token_detail_metadata_device_id),
+                                value = deviceId,
+                                copyDescription = stringResource(R.string.token_detail_metadata_device_id),
                             )
                         }
                         if (bindingPreparation.supportsEditableWebApiKey) {
-                            OutlinedTextField(
+                            VaultTextField(
                                 value = webApiKeyInput,
                                 onValueChange = { webApiKeyInput = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = {
-                                    Text(
-                                        stringResource(
-                                            R.string.steam_authenticator_binding_web_api_key_label,
-                                        ),
-                                    )
-                                },
-                                supportingText = {
-                                    Text(
-                                        stringResource(
-                                            R.string.steam_authenticator_binding_web_api_key_supporting,
-                                        ),
-                                    )
-                                },
+                                label = stringResource(
+                                    R.string.steam_authenticator_binding_web_api_key_label,
+                                ),
+                                supportingText = stringResource(
+                                    R.string.steam_authenticator_binding_web_api_key_supporting,
+                                ),
                                 singleLine = true,
                             )
                         }
@@ -941,172 +956,134 @@ fun SteamAuthenticatorBindingScreen(
                             ),
                         ) {
                             phoneRecoveryStatusMessage?.let { message ->
-                                Text(
+                                VaultInlineBanner(
                                     text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    tone = VaultBannerTone.Success,
                                 )
                             }
                             phoneRecoveryErrorMessage?.let { message ->
-                                Text(
+                                VaultInlineBanner(
                                     text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
+                                    tone = VaultBannerTone.Error,
                                 )
                             }
                             if (!hasOauthToken) {
-                                Text(
+                                VaultInlineBanner(
                                     text = stringResource(
                                         R.string.steam_authenticator_binding_phone_oauth_required,
                                     ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
+                                    tone = VaultBannerTone.Warning,
                                 )
                             }
                             when (recoveryStage) {
                                 SteamAuthenticatorPhoneRecoveryStage.ENTER_PHONE -> {
-                                    OutlinedTextField(
+                                    VaultTextField(
                                         value = phoneNumberInput,
                                         onValueChange = { phoneNumberInput = it },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_phone_number_label,
-                                                ),
-                                            )
-                                        },
+                                        label = stringResource(
+                                            R.string.steam_authenticator_binding_phone_number_label,
+                                        ),
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
                                         singleLine = true,
                                     )
-                                    OutlinedTextField(
+                                    VaultTextField(
                                         value = phoneCountryCodeInput,
                                         onValueChange = { phoneCountryCodeInput = it },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_phone_country_code_label,
-                                                ),
-                                            )
-                                        },
+                                        label = stringResource(
+                                            R.string.steam_authenticator_binding_phone_country_code_label,
+                                        ),
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
                                         singleLine = true,
                                     )
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            if (isProcessingPhoneRecovery) {
+                                                R.string.steam_authenticator_binding_begin_loading
+                                            } else {
+                                                R.string.steam_authenticator_binding_phone_submit_action
+                                            },
+                                        ),
                                         onClick = {
                                             scope.launch {
                                                 submitPhoneNumber(bindingPreparation)
                                             }
                                         },
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                if (isProcessingPhoneRecovery) {
-                                                    R.string.steam_authenticator_binding_begin_loading
-                                                } else {
-                                                    R.string.steam_authenticator_binding_phone_submit_action
-                                                },
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
 
                                 SteamAuthenticatorPhoneRecoveryStage.WAITING_EMAIL_CONFIRMATION -> {
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            if (isProcessingPhoneRecovery) {
+                                                R.string.steam_authenticator_binding_begin_loading
+                                            } else {
+                                                R.string.steam_authenticator_binding_phone_email_check_action
+                                            },
+                                        ),
                                         onClick = {
                                             scope.launch {
                                                 confirmPhoneEmail(bindingPreparation)
                                             }
                                         },
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                if (isProcessingPhoneRecovery) {
-                                                    R.string.steam_authenticator_binding_begin_loading
-                                                } else {
-                                                    R.string.steam_authenticator_binding_phone_email_check_action
-                                                },
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
 
                                 SteamAuthenticatorPhoneRecoveryStage.WAITING_SMS_CODE -> {
-                                    OutlinedTextField(
+                                    VaultTextField(
                                         value = phoneSmsCodeInput,
                                         onValueChange = { phoneSmsCodeInput = it },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_phone_sms_code_label,
-                                                ),
-                                            )
-                                        },
+                                        label = stringResource(
+                                            R.string.steam_authenticator_binding_phone_sms_code_label,
+                                        ),
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
                                         singleLine = true,
                                     )
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            if (isProcessingPhoneRecovery) {
+                                                R.string.steam_authenticator_binding_begin_loading
+                                            } else {
+                                                R.string.steam_authenticator_binding_phone_verify_action
+                                            },
+                                        ),
                                         onClick = {
                                             scope.launch {
                                                 verifyPhoneCode(bindingPreparation)
                                             }
                                         },
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                if (isProcessingPhoneRecovery) {
-                                                    R.string.steam_authenticator_binding_begin_loading
-                                                } else {
-                                                    R.string.steam_authenticator_binding_phone_verify_action
-                                                },
-                                            ),
-                                        )
-                                    }
-                                    OutlinedButton(
+                                    )
+                                    VaultSecondaryButton(
+                                        text = stringResource(
+                                            R.string.steam_authenticator_binding_phone_resend_sms_action,
+                                        ),
                                         onClick = {
                                             scope.launch {
                                                 sendPhoneVerificationCode(bindingPreparation)
                                             }
                                         },
                                         enabled = !isProcessingPhoneRecovery && hasOauthToken,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_phone_resend_sms_action,
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
 
                                 SteamAuthenticatorPhoneRecoveryStage.READY_TO_RETRY_BINDING -> {
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            if (isBeginning) {
+                                                R.string.steam_authenticator_binding_begin_loading
+                                            } else {
+                                                R.string.steam_authenticator_binding_phone_retry_begin_action
+                                            },
+                                        ),
                                         onClick = {
                                             scope.launch {
                                                 beginBindingRequest(bindingPreparation)
                                             }
                                         },
                                         enabled = !isBeginning,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                if (isBeginning) {
-                                                    R.string.steam_authenticator_binding_begin_loading
-                                                } else {
-                                                    R.string.steam_authenticator_binding_phone_retry_begin_action
-                                                },
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
                             }
                         }
@@ -1121,62 +1098,52 @@ fun SteamAuthenticatorBindingScreen(
                             ),
                         ) {
                             progressStatusMessage?.let { message ->
-                                Text(
+                                VaultInlineBanner(
                                     text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    tone = VaultBannerTone.Success,
                                 )
                             }
                             selectedAuthMode?.let { authMode ->
-                                Text(
-                                    text = stringResource(
-                                        R.string.steam_authenticator_binding_request_auth_mode,
-                                        authModeLabel(authMode),
+                                VaultKeyValueRow(
+                                    label = stringResource(
+                                        R.string.steam_authenticator_binding_auth_mode_title,
                                     ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    value = authModeLabel(authMode),
                                 )
                             }
                             beginError?.let { message ->
-                                Text(
+                                VaultInlineBanner(
                                     text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.error,
+                                    tone = VaultBannerTone.Error,
                                 )
                             }
                             beginGuidance?.let { guidance ->
-                                Text(
+                                VaultInlineBanner(
                                     text = bindingFailureGuidanceMessage(guidance),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tone = VaultBannerTone.Warning,
                                 )
                                 guidance.suggestedMode?.let { suggestedMode ->
-                                    OutlinedButton(
+                                    VaultSecondaryButton(
+                                        text = stringResource(
+                                            R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
+                                            authModeLabel(suggestedMode),
+                                        ),
                                         onClick = { selectedAuthModeName = suggestedMode.name },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
-                                                authModeLabel(suggestedMode),
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
                                 if (guidance.kind == SteamAuthenticatorBindingFailureGuidanceKind.SIGN_IN_AGAIN) {
-                                    OutlinedButton(
+                                    VaultSecondaryButton(
+                                        text = stringResource(
+                                            R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
+                                        ),
                                         onClick = onReturnToSignIn,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
                                 if (guidance.kind == SteamAuthenticatorBindingFailureGuidanceKind.OPEN_COMPATIBILITY_IMPORT) {
-                                    OutlinedButton(
+                                    VaultSecondaryButton(
+                                        text = stringResource(
+                                            R.string.steam_authenticator_binding_guidance_open_import_action,
+                                        ),
                                         onClick = {
                                             onOpenCompatibilityImport(
                                                 buildExistingAuthenticatorImportContext(
@@ -1184,35 +1151,24 @@ fun SteamAuthenticatorBindingScreen(
                                                 ),
                                             )
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_guidance_open_import_action,
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
                             }
-                            Button(
+                            VaultPrimaryButton(
+                                text = stringResource(
+                                    if (isBeginning) {
+                                        R.string.steam_authenticator_binding_begin_loading
+                                    } else {
+                                        R.string.steam_authenticator_binding_begin_action
+                                    },
+                                ),
                                 onClick = {
                                     scope.launch {
                                         beginBindingRequest(bindingPreparation)
                                     }
                                 },
                                 enabled = !isBeginning,
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (isBeginning) {
-                                            R.string.steam_authenticator_binding_begin_loading
-                                        } else {
-                                            R.string.steam_authenticator_binding_begin_action
-                                        },
-                                    ),
-                                )
-                            }
+                            )
                         }
                     }
                 }
@@ -1227,24 +1183,21 @@ fun SteamAuthenticatorBindingScreen(
                             ),
                         ) {
                             finalizeMessage?.let { message ->
-                                Text(
+                                VaultInlineBanner(
                                     text = message,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    tone = VaultBannerTone.Success,
                                 )
                             }
                             selectedAuthMode?.let { authMode ->
-                                Text(
-                                    text = stringResource(
-                                        R.string.steam_authenticator_binding_request_auth_mode,
-                                        authModeLabel(authMode),
+                                VaultKeyValueRow(
+                                    label = stringResource(
+                                        R.string.steam_authenticator_binding_auth_mode_title,
                                     ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    value = authModeLabel(authMode),
                                 )
                             }
                             bindingProgress?.let { progress ->
-                                Text(
+                                VaultInlineBanner(
                                     text = stringResource(
                                         R.string.steam_authenticator_binding_materials_stage,
                                         stringResource(
@@ -1259,19 +1212,14 @@ fun SteamAuthenticatorBindingScreen(
                                             },
                                         ),
                                     ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    tone = VaultBannerTone.Neutral,
                                 )
                             }
-                            Text(
-                                text = stringResource(
-                                    R.string.steam_authenticator_binding_material_account_name,
-                                    result.accountName ?: stringResource(
-                                        R.string.steam_authenticator_binding_material_account_name_unknown,
-                                    ),
+                            VaultKeyValueRow(
+                                label = stringResource(R.string.import_label_manual_account_name),
+                                value = result.accountName ?: stringResource(
+                                    R.string.steam_authenticator_binding_material_account_name_unknown,
                                 ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             result.tokenGid?.let { tokenGid ->
                                 Text(
@@ -1322,66 +1270,54 @@ fun SteamAuthenticatorBindingScreen(
                                 ),
                             ) {
                                 finalizeError?.let { message ->
-                                    Text(
+                                    VaultInlineBanner(
                                         text = message,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.error,
+                                        tone = VaultBannerTone.Error,
                                     )
                                 }
                                 finalizeGuidance?.let { guidance ->
-                                    Text(
+                                    VaultInlineBanner(
                                         text = bindingFailureGuidanceMessage(guidance),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tone = VaultBannerTone.Warning,
                                     )
                                     guidance.suggestedMode?.let { suggestedMode ->
-                                        OutlinedButton(
+                                        VaultSecondaryButton(
+                                            text = stringResource(
+                                                R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
+                                                authModeLabel(suggestedMode),
+                                            ),
                                             onClick = { selectedAuthModeName = suggestedMode.name },
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
-                                                    authModeLabel(suggestedMode),
-                                                ),
-                                            )
-                                        }
+                                        )
                                     }
                                     if (guidance.kind == SteamAuthenticatorBindingFailureGuidanceKind.SIGN_IN_AGAIN) {
-                                        OutlinedButton(
+                                        VaultSecondaryButton(
+                                            text = stringResource(
+                                                R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
+                                            ),
                                             onClick = onReturnToSignIn,
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
-                                                ),
-                                            )
-                                        }
+                                        )
                                     }
                                 }
-                                OutlinedTextField(
+                                VaultTextField(
                                     value = activationCode,
                                     onValueChange = { activationCode = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    label = {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_activation_code_label,
-                                            ),
-                                        )
-                                    },
-                                    supportingText = {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_authenticator_binding_activation_code_supporting,
-                                            ),
-                                        )
-                                    },
+                                    label = stringResource(
+                                        R.string.steam_authenticator_binding_activation_code_label,
+                                    ),
+                                    supportingText = stringResource(
+                                        R.string.steam_authenticator_binding_activation_code_supporting,
+                                    ),
                                     enabled = !isFinalizing,
                                     singleLine = true,
                                 )
-                                Button(
+                                VaultPrimaryButton(
+                                    text = stringResource(
+                                        if (isFinalizing) {
+                                            R.string.steam_authenticator_binding_finalize_loading
+                                        } else {
+                                            R.string.steam_authenticator_binding_finalize_action
+                                        },
+                                    ),
                                     onClick = {
                                         scope.launch {
                                             if (activationCode.trim().isEmpty()) {
@@ -1501,18 +1437,7 @@ fun SteamAuthenticatorBindingScreen(
                                         }
                                     },
                                     enabled = !isFinalizing,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            if (isFinalizing) {
-                                                R.string.steam_authenticator_binding_finalize_loading
-                                            } else {
-                                                R.string.steam_authenticator_binding_finalize_action
-                                            },
-                                        ),
-                                    )
-                                }
+                                )
                             }
                         }
                     } else {
@@ -1526,45 +1451,38 @@ fun SteamAuthenticatorBindingScreen(
                                 ),
                             ) {
                                 finalizeError?.let { message ->
-                                    Text(
+                                    VaultInlineBanner(
                                         text = message,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.error,
+                                        tone = VaultBannerTone.Error,
                                     )
                                 }
                                 finalizeGuidance?.let { guidance ->
-                                    Text(
+                                    VaultInlineBanner(
                                         text = bindingFailureGuidanceMessage(guidance),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        tone = VaultBannerTone.Warning,
                                     )
                                     guidance.suggestedMode?.let { suggestedMode ->
-                                        OutlinedButton(
+                                        VaultSecondaryButton(
+                                            text = stringResource(
+                                                R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
+                                                authModeLabel(suggestedMode),
+                                            ),
                                             onClick = { selectedAuthModeName = suggestedMode.name },
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_guidance_switch_auth_mode_action,
-                                                    authModeLabel(suggestedMode),
-                                                ),
-                                            )
-                                        }
+                                        )
                                     }
                                     if (guidance.kind == SteamAuthenticatorBindingFailureGuidanceKind.SIGN_IN_AGAIN) {
-                                        OutlinedButton(
+                                        VaultSecondaryButton(
+                                            text = stringResource(
+                                                R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
+                                            ),
                                             onClick = onReturnToSignIn,
-                                            modifier = Modifier.fillMaxWidth(),
-                                        ) {
-                                            Text(
-                                                stringResource(
-                                                    R.string.steam_authenticator_binding_guidance_return_to_sign_in_action,
-                                                ),
-                                            )
-                                        }
+                                        )
                                     }
                                 }
-                                Button(
+                                VaultPrimaryButton(
+                                    text = stringResource(
+                                        R.string.steam_authenticator_binding_save_action,
+                                    ),
                                     onClick = {
                                         scope.launch {
                                             try {
@@ -1578,14 +1496,7 @@ fun SteamAuthenticatorBindingScreen(
                                             }
                                         }
                                     },
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            R.string.steam_authenticator_binding_save_action,
-                                        ),
-                                    )
-                                }
+                                )
                             }
                         }
                     }
@@ -1601,14 +1512,15 @@ fun SteamAuthenticatorBindingScreen(
                             },
                         ),
                     ) {
-                        OutlinedButton(
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.steam_authenticator_binding_return_action),
                             onClick = onReturnToSignIn,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_authenticator_binding_return_action))
-                        }
+                        )
                         if (bindingProgress != null || beginResult != null) {
-                            OutlinedButton(
+                            VaultSecondaryButton(
+                                text = stringResource(
+                                    R.string.steam_authenticator_binding_clear_progress_action,
+                                ),
                                 onClick = {
                                     scope.launch {
                                         runCatching { bindingProgressRepository.clearProgress() }
@@ -1635,14 +1547,7 @@ fun SteamAuthenticatorBindingScreen(
                                         phoneNumberFormatted = ""
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(
-                                    stringResource(
-                                        R.string.steam_authenticator_binding_clear_progress_action,
-                                    ),
-                                )
-                            }
+                            )
                         }
                     }
                 }

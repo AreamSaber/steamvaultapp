@@ -1,17 +1,10 @@
 package com.example.steam_vault_app.feature.cloudbackup
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,6 +23,12 @@ import com.example.steam_vault_app.R
 import com.example.steam_vault_app.domain.model.WebDavBackupConfiguration
 import com.example.steam_vault_app.domain.repository.CloudBackupRepository
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultTextField
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -77,114 +76,94 @@ fun CloudBackupConfigScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.cloud_backup_config_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.cloud_config_modern_title),
+                subtitle = stringResource(R.string.cloud_config_modern_body),
             )
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.cloud_backup_config_section_title),
-                description = stringResource(R.string.cloud_backup_config_section_description),
-            ) {
-                Text(
-                    text = stringResource(
-                        R.string.cloud_backup_config_jianguoyun_url,
-                        DEFAULT_JIANGUOYUN_WEBDAV_URL,
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Text(
-                    text = stringResource(R.string.cloud_backup_config_use_app_password),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
         }
         errorMessage?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
         }
         statusMessage?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
+                    tone = VaultBannerTone.Success,
                 )
             }
         }
         item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ScreenSectionCard(
+                title = stringResource(R.string.cloud_config_modern_card_title),
+                description = stringResource(R.string.cloud_config_modern_card_body),
             ) {
-                OutlinedTextField(
+                VaultInlineBanner(
+                    text = stringResource(R.string.cloud_config_modern_tip),
+                    tone = VaultBannerTone.Neutral,
+                )
+                VaultTextField(
                     value = serviceUrl,
                     onValueChange = { serviceUrl = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.cloud_backup_config_label_service_url)) },
+                    label = stringResource(R.string.cloud_config_modern_url),
                     singleLine = true,
+                    enabled = !isLoading && !isSaving,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
                         imeAction = ImeAction.Next,
                     ),
-                    enabled = !isLoading && !isSaving,
                 )
-                OutlinedTextField(
+                VaultTextField(
                     value = username,
                     onValueChange = { username = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.cloud_backup_config_label_username)) },
+                    label = stringResource(R.string.cloud_config_modern_username),
                     singleLine = true,
+                    enabled = !isLoading && !isSaving,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
                         imeAction = ImeAction.Next,
                     ),
-                    enabled = !isLoading && !isSaving,
                 )
-                OutlinedTextField(
+                VaultTextField(
                     value = appPassword,
                     onValueChange = { appPassword = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.cloud_backup_config_label_app_password)) },
+                    label = stringResource(R.string.cloud_config_modern_password),
                     singleLine = true,
+                    enabled = !isLoading && !isSaving,
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Next,
                     ),
-                    enabled = !isLoading && !isSaving,
                 )
-                OutlinedTextField(
+                VaultTextField(
                     value = remotePath,
                     onValueChange = { remotePath = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.cloud_backup_config_label_remote_path)) },
+                    label = stringResource(R.string.cloud_config_modern_path),
                     singleLine = true,
+                    enabled = !isLoading && !isSaving,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
                         imeAction = ImeAction.Done,
                     ),
-                    enabled = !isLoading && !isSaving,
                 )
-            }
-        }
-        item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isSaving) {
+                            R.string.cloud_config_modern_action_loading
+                        } else {
+                            R.string.cloud_config_modern_action
+                        },
+                    ),
                     onClick = {
                         val candidate = WebDavBackupConfiguration(
                             serverUrl = serviceUrl,
@@ -192,7 +171,6 @@ fun CloudBackupConfigScreen(
                             appPassword = appPassword,
                             remotePath = remotePath,
                         ).normalized()
-
                         when {
                             candidate.serverUrl.isBlank() -> {
                                 errorMessage = context.getString(R.string.cloud_backup_config_validation_service_url_blank)
@@ -219,14 +197,12 @@ fun CloudBackupConfigScreen(
                                     isSaving = true
                                     errorMessage = null
                                     statusMessage = null
-
                                     try {
                                         cloudBackupRepository.saveConfiguration(candidate)
                                         statusMessage = context.getString(R.string.cloud_backup_config_saved)
                                         onConfigurationSaved()
                                     } catch (error: Exception) {
                                         errorMessage = error.message ?: context.getString(R.string.cloud_backup_config_save_failed)
-                                        statusMessage = null
                                     } finally {
                                         isSaving = false
                                     }
@@ -235,19 +211,9 @@ fun CloudBackupConfigScreen(
                         }
                     },
                     enabled = !isLoading && !isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isSaving) {
-                                R.string.cloud_backup_config_action_loading
-                            } else {
-                                R.string.cloud_backup_config_action_idle
-                            },
-                        ),
-                    )
-                }
-                OutlinedButton(
+                )
+                VaultSecondaryButton(
+                    text = stringResource(R.string.cloud_config_modern_restore_template),
                     onClick = {
                         serviceUrl = DEFAULT_JIANGUOYUN_WEBDAV_URL
                         remotePath = WebDavBackupConfiguration.DEFAULT_REMOTE_PATH
@@ -255,10 +221,7 @@ fun CloudBackupConfigScreen(
                         errorMessage = null
                     },
                     enabled = !isLoading && !isSaving,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.cloud_backup_config_action_restore_template))
-                }
+                )
             }
         }
     }

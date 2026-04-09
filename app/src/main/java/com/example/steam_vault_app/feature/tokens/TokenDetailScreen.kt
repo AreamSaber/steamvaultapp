@@ -1,26 +1,20 @@
 package com.example.steam_vault_app.feature.tokens
 
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,8 +35,13 @@ import com.example.steam_vault_app.domain.repository.SteamSessionRepository
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.domain.security.VaultCryptography
 import com.example.steam_vault_app.ui.common.AppUiState
-import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultSensitiveValueRow
 
 @Composable
 fun TokenDetailScreen(
@@ -58,7 +57,6 @@ fun TokenDetailScreen(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
-    var sensitiveValuesVisible by rememberSaveable { mutableStateOf(false) }
     var advancedInfoVisible by rememberSaveable { mutableStateOf(false) }
     var copyMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
@@ -73,11 +71,12 @@ fun TokenDetailScreen(
                 AppUiState.Error(context.getString(R.string.token_detail_error_not_found))
             } else {
                 val session = steamSessionRepository.getSession(tokenId)
-                val snapshot = SteamGuardAccountSnapshot.fromLegacy(
-                    token = token,
-                    session = session,
+                AppUiState.Success(
+                    SteamGuardAccountSnapshot.fromLegacy(
+                        token = token,
+                        session = session,
+                    ),
                 )
-                AppUiState.Success(snapshot)
             }
         } catch (_: Exception) {
             AppUiState.Error(context.getString(R.string.token_detail_error_load_failed))
@@ -90,24 +89,24 @@ fun TokenDetailScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         when (val currentState = tokenState) {
-            AppUiState.Loading -> {
-                item { Text(stringResource(R.string.token_detail_loading)) }
+            AppUiState.Loading -> item {
+                VaultInlineBanner(
+                    text = stringResource(R.string.token_detail_loading),
+                    tone = VaultBannerTone.Neutral,
+                )
             }
 
             AppUiState.Empty -> Unit
 
-            is AppUiState.Error -> {
-                item {
-                    Text(
-                        text = currentState.message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
+            is AppUiState.Error -> item {
+                VaultInlineBanner(
+                    text = currentState.message,
+                    tone = VaultBannerTone.Error,
+                )
             }
 
             is AppUiState.Success -> {
@@ -121,35 +120,63 @@ fun TokenDetailScreen(
                 )
 
                 item {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
-                    ) {
-                        Text(
-                            text = token.accountName,
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onBackground,
+                    VaultPageHeader(
+                        eyebrow = stringResource(R.string.vault_brand_label),
+                        title = token.accountName,
+                        subtitle = stringResource(R.string.token_detail_modern_subtitle),
+                    )
+                }
+                copyMessage?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Success,
                         )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        
-                        Box(contentAlignment = Alignment.Center) {
+                    }
+                }
+                if (snapshot.hasSecretError) {
+                    item {
+                        VaultInlineBanner(
+                            text = stringResource(R.string.token_card_secret_error),
+                            tone = VaultBannerTone.Error,
+                        )
+                    }
+                }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.token_detail_modern_code_title),
+                        description = stringResource(R.string.token_detail_modern_code_body),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
                             CircularProgressIndicator(
                                 progress = { snapshot.progress },
-                                modifier = Modifier.size(160.dp),
-                                color = MaterialTheme.colorScheme.primary,
-                                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                modifier = Modifier.size(180.dp),
                                 strokeWidth = 8.dp,
+                                color = if (snapshot.secondsRemaining <= 5) {
+                                    MaterialTheme.colorScheme.tertiary
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                },
+                                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             )
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
                                 Text(
                                     text = snapshot.codeDisplay,
                                     style = MaterialTheme.typography.displayMedium,
                                     fontFamily = FontFamily.Monospace,
-                                    color = MaterialTheme.colorScheme.primary,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                 )
                                 Text(
                                     text = stringResource(
-                                        R.string.token_card_seconds_remaining,
+                                        R.string.token_detail_modern_time_remaining,
                                         snapshot.secondsRemaining,
                                     ),
                                     style = MaterialTheme.typography.bodyMedium,
@@ -157,194 +184,117 @@ fun TokenDetailScreen(
                                 )
                             }
                         }
-                        
-                        Spacer(modifier = Modifier.height(32.dp))
-                        
-                        Button(
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.vault_copy_action),
                             onClick = {
                                 if (!snapshot.hasSecretError) {
-                                    clipboardManager.setText(
-                                        AnnotatedString(snapshot.codeDisplay),
-                                    )
-                                    copyMessage = context.getString(R.string.token_detail_copy_success)
+                                    clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
+                                    copyMessage = context.getString(R.string.token_detail_modern_copy_success)
                                 }
                             },
                             enabled = !snapshot.hasSecretError,
-                            modifier = Modifier.fillMaxWidth(0.8f).height(56.dp),
-                        ) {
-                            Text(stringResource(R.string.token_detail_copy_action), style = MaterialTheme.typography.titleMedium)
-                        }
-                        
-                        copyMessage?.let { message ->
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        
-                        if (snapshot.hasSecretError) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.token_card_secret_error),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
+                        )
                     }
                 }
-                
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ScreenSectionCard(
+                        title = stringResource(R.string.token_detail_modern_session_title),
+                        description = stringResource(R.string.token_detail_modern_session_body),
+                        onClick = onOpenSteamSession,
                     ) {
-                        OutlinedButton(
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.token_detail_modern_session_open),
+                            onClick = onOpenSteamSession,
+                        )
+                    }
+                }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.token_detail_modern_confirmations_title),
+                        description = stringResource(R.string.token_detail_modern_confirmations_body),
+                        onClick = onOpenSteamConfirmations,
+                    ) {
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.token_detail_modern_confirmations_open),
                             onClick = onOpenSteamConfirmations,
-                            modifier = Modifier.weight(1f).height(48.dp),
-                        ) {
-                            Text(stringResource(R.string.token_detail_open_confirmations_action))
-                        }
+                        )
                     }
                 }
-                
                 item {
-                    TextButton(
-                        onClick = { advancedInfoVisible = !advancedInfoVisible },
-                        modifier = Modifier.fillMaxWidth()
+                    ScreenSectionCard(
+                        title = stringResource(R.string.token_detail_modern_advanced_title),
+                        description = stringResource(R.string.token_detail_modern_advanced_body),
                     ) {
-                        Text(if (advancedInfoVisible) "Hide Advanced Info" else "Show Advanced Info")
+                        VaultSecondaryButton(
+                            text = stringResource(
+                                if (advancedInfoVisible) {
+                                    R.string.vault_hide_advanced_action
+                                } else {
+                                    R.string.vault_show_advanced_action
+                                },
+                            ),
+                            onClick = { advancedInfoVisible = !advancedInfoVisible },
+                        )
                     }
                 }
-
                 item {
                     AnimatedVisibility(visible = advancedInfoVisible) {
-                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            ScreenSectionCard(
-                                title = stringResource(R.string.token_detail_session_title),
-                                description = stringResource(R.string.token_detail_session_description),
-                            ) {
-                                ChecklistRow(
-                                    label = if (snapshotItem.hasProtocolSession) {
-                                        stringResource(R.string.steam_session_identity_present) 
-                                    } else if (snapshotItem.hasWebConfirmationSession) {
-                                        stringResource(R.string.steam_confirmation_session_cookie_present)
-                                    } else {
-                                        stringResource(R.string.steam_confirmation_session_missing)
-                                    },
-                                    highlighted = snapshotItem.hasProtocolSession || snapshotItem.hasWebConfirmationSession,
-                                )
-                                if (!snapshotItem.hasProtocolSession) {
-                                    Text(
-                                        text = stringResource(R.string.steam_session_identity_missing),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.error,
-                                    )
-                                }
-                                Button(
-                                    onClick = onOpenSteamSession,
-                                    modifier = Modifier.fillMaxWidth(),
-                                ) {
-                                    Text(stringResource(R.string.token_detail_open_session_action))
-                                }
-                            }
-
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                        ) {
                             ScreenSectionCard(
                                 title = stringResource(R.string.token_detail_metadata_title),
                                 description = stringResource(R.string.token_detail_metadata_description),
                             ) {
-                                DetailLine(label = stringResource(R.string.token_detail_metadata_platform), value = token.platform)
-                                DetailLine(label = stringResource(R.string.token_detail_metadata_created_at), value = token.createdAt)
-                                DetailLine(label = stringResource(R.string.token_detail_metadata_updated_at), value = token.updatedAt)
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_platform),
+                                    value = token.platform,
+                                )
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_created_at),
+                                    value = token.createdAt,
+                                )
+                                DetailLine(
+                                    label = stringResource(R.string.token_detail_metadata_updated_at),
+                                    value = token.updatedAt,
+                                )
                                 DetailLine(
                                     label = stringResource(R.string.token_detail_metadata_serial_number),
                                     value = token.serialNumber ?: stringResource(R.string.common_not_saved),
-                                )
-                                DetailLine(
-                                    label = stringResource(R.string.token_detail_metadata_device_id),
-                                    value = token.deviceId ?: stringResource(R.string.common_not_saved),
-                                )
-                                DetailLine(
-                                    label = stringResource(R.string.token_detail_metadata_token_gid),
-                                    value = token.tokenGid ?: stringResource(R.string.common_not_saved),
                                 )
                                 DetailLine(
                                     label = stringResource(R.string.token_detail_metadata_uri),
                                     value = token.uri ?: stringResource(R.string.common_not_saved),
                                 )
                             }
-
                             ScreenSectionCard(
                                 title = stringResource(R.string.token_detail_protected_title),
-                                description = stringResource(R.string.token_detail_protected_description),
+                                description = stringResource(R.string.token_detail_modern_sensitive_note),
                             ) {
-                                OutlinedButton(
-                                    onClick = { sensitiveValuesVisible = !sensitiveValuesVisible },
-                                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                                ) {
-                                    Text(
-                                        stringResource(
-                                            if (sensitiveValuesVisible) {
-                                                R.string.token_detail_hide_sensitive
-                                            } else {
-                                                R.string.token_detail_show_sensitive
-                                            },
-                                        ),
-                                    )
-                                }
-                                ChecklistRow(
-                                    label = if (sensitiveValuesVisible) {
-                                        stringResource(
-                                            R.string.token_detail_revocation_code,
-                                            token.revocationCode ?: stringResource(R.string.common_not_saved),
-                                        )
-                                    } else {
-                                        stringResource(
-                                            R.string.token_detail_revocation_code,
-                                            maskValue(context, token.revocationCode),
-                                        )
-                                    },
-                                    highlighted = sensitiveValuesVisible,
+                                SensitiveField(
+                                    label = stringResource(R.string.token_detail_shared_secret_label),
+                                    value = token.sharedSecret,
+                                    clipboardManager = clipboardManager,
+                                    context = context,
                                 )
-                                ChecklistRow(
-                                    label = if (sensitiveValuesVisible) {
-                                        stringResource(
-                                            R.string.token_detail_identity_secret,
-                                            token.identitySecret ?: stringResource(R.string.common_not_saved),
-                                        )
-                                    } else {
-                                        stringResource(
-                                            R.string.token_detail_identity_secret,
-                                            maskValue(context, token.identitySecret),
-                                        )
-                                    },
-                                    highlighted = sensitiveValuesVisible,
+                                SensitiveField(
+                                    label = stringResource(R.string.token_detail_identity_secret_label),
+                                    value = token.identitySecret,
+                                    clipboardManager = clipboardManager,
+                                    context = context,
                                 )
-                                ChecklistRow(
-                                    label = if (sensitiveValuesVisible) {
-                                        stringResource(
-                                            R.string.token_detail_secret1,
-                                            token.secret1 ?: stringResource(R.string.common_not_saved),
-                                        )
-                                    } else {
-                                        stringResource(
-                                            R.string.token_detail_secret1,
-                                            maskValue(context, token.secret1),
-                                        )
-                                    },
-                                    highlighted = sensitiveValuesVisible,
+                                SensitiveField(
+                                    label = stringResource(R.string.token_detail_metadata_device_id),
+                                    value = token.deviceId,
+                                    clipboardManager = clipboardManager,
+                                    context = context,
                                 )
-                                ChecklistRow(
-                                    label = if (sensitiveValuesVisible) {
-                                        stringResource(R.string.token_detail_shared_secret, token.sharedSecret)
-                                    } else {
-                                        stringResource(
-                                            R.string.token_detail_shared_secret,
-                                            maskValue(context, token.sharedSecret),
-                                        )
-                                    },
-                                    highlighted = sensitiveValuesVisible,
+                                SensitiveField(
+                                    label = stringResource(R.string.token_detail_revocation_code_label),
+                                    value = token.revocationCode,
+                                    clipboardManager = clipboardManager,
+                                    context = context,
+                                    monospace = false,
                                 )
                             }
                         }
@@ -360,7 +310,9 @@ private fun DetailLine(
     label: String,
     value: String,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
@@ -374,19 +326,23 @@ private fun DetailLine(
     }
 }
 
-private fun maskValue(
-    context: android.content.Context,
+@Composable
+private fun SensitiveField(
+    label: String,
     value: String?,
-): String {
-    if (value.isNullOrBlank()) {
-        return context.getString(R.string.common_hidden_or_not_saved)
-    }
-    if (value.length <= 6) {
-        return context.getString(R.string.common_masked_value)
-    }
-    return context.getString(
-        R.string.common_truncated_value,
-        value.take(3),
-        value.takeLast(3),
+    clipboardManager: androidx.compose.ui.platform.ClipboardManager,
+    context: Context,
+    monospace: Boolean = true,
+) {
+    VaultSensitiveValueRow(
+        label = label,
+        value = value ?: context.getString(R.string.common_not_saved),
+        copyDescription = context.getString(R.string.vault_copy_value_description),
+        monospace = monospace,
+        onCopy = value?.takeIf { it.isNotBlank() }?.let { currentValue ->
+            {
+                clipboardManager.setText(AnnotatedString(currentValue))
+            }
+        },
     )
 }

@@ -7,9 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +24,10 @@ import com.example.steam_vault_app.R
 import com.example.steam_vault_app.data.backup.LocalBackupPayloadCodec
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.launch
 
@@ -73,27 +75,50 @@ fun BackupRestoreScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.backup_restore_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.backup_restore_modern_title),
+                subtitle = stringResource(R.string.backup_restore_modern_body),
             )
+        }
+        statusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
+                )
+            }
+        }
+        errorMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Error,
+                )
+            }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.backup_restore_section_title),
-                description = stringResource(R.string.backup_restore_section_description),
+                title = stringResource(R.string.backup_restore_modern_card_title),
+                description = stringResource(R.string.backup_restore_modern_card_body),
             ) {
                 Text(
-                    text = stringResource(R.string.backup_restore_warning),
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.backup_restore_modern_caution),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isWorking) {
+                            R.string.backup_restore_modern_action_loading
+                        } else {
+                            R.string.backup_restore_modern_action
+                        },
+                    ),
                     onClick = {
                         isWorking = true
                         statusMessage = null
@@ -101,35 +126,6 @@ fun BackupRestoreScreen(
                         openDocumentLauncher.launch(arrayOf("application/json", "text/plain"))
                     },
                     enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isWorking) {
-                                R.string.backup_restore_action_loading
-                            } else {
-                                R.string.backup_restore_action_idle
-                            },
-                        ),
-                    )
-                }
-            }
-        }
-        statusMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-        errorMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }

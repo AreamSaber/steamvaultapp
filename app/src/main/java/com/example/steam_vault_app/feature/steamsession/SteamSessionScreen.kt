@@ -3,16 +3,11 @@ package com.example.steam_vault_app.feature.steamsession
 import com.example.steam_vault_app.data.importing.SteamImportParser
 import com.example.steam_vault_app.data.security.SteamSecretCodec
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -48,6 +43,16 @@ import com.example.steam_vault_app.domain.sync.SteamSessionValidationSyncManager
 import com.example.steam_vault_app.ui.common.AppUiState
 import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultKeyValueRow
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultProgressSteps
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultStepItem
+import com.example.steam_vault_app.ui.common.VaultStepState
+import com.example.steam_vault_app.ui.common.VaultTextField
 import java.time.Instant
 import kotlin.coroutines.coroutineContext
 import kotlinx.coroutines.CancellationException
@@ -314,30 +319,128 @@ fun SteamSessionScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         when (val currentState = sessionState) {
-            AppUiState.Loading -> item { Text(stringResource(R.string.steam_session_loading)) }
+            AppUiState.Loading -> item {
+                VaultInlineBanner(
+                    text = stringResource(R.string.steam_session_loading),
+                    tone = VaultBannerTone.Neutral,
+                )
+            }
+
             AppUiState.Empty -> Unit
             is AppUiState.Error -> item {
-                Text(
+                VaultInlineBanner(
                     text = currentState.message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
 
             is AppUiState.Success -> {
                 val token = currentState.value.token
                 val session = currentState.value.session
+                val prerequisitesReady = listOf(
+                    !token.identitySecret.isNullOrBlank(),
+                    !token.deviceId.isNullOrBlank(),
+                    !token.tokenGid.isNullOrBlank(),
+                    steamTimeSyncState.lastSyncAt != null,
+                )
+                val progressSteps = listOf(
+                    VaultStepItem(
+                        title = context.getString(R.string.steam_session_prerequisites_title),
+                        subtitle = context.getString(R.string.steam_session_prerequisites_description),
+                        state = if (prerequisitesReady.all { it }) {
+                            VaultStepState.Complete
+                        } else {
+                            VaultStepState.Active
+                        },
+                    ),
+                    VaultStepItem(
+                        title = context.getString(R.string.steam_session_current_title),
+                        subtitle = context.getString(R.string.steam_session_current_description),
+                        state = if (session != null) {
+                            VaultStepState.Complete
+                        } else {
+                            VaultStepState.Active
+                        },
+                    ),
+                    VaultStepItem(
+                        title = context.getString(R.string.steam_session_protocol_repair_title),
+                        subtitle = context.getString(R.string.steam_session_protocol_repair_description),
+                        state = when {
+                            pendingRecoveryChallenge != null || isRecoveringSession -> VaultStepState.Active
+                            session != null -> VaultStepState.Complete
+                            else -> VaultStepState.Pending
+                        },
+                    ),
+                )
 
                 item {
-                    Text(
-                        text = stringResource(R.string.steam_session_title_for_account, token.accountName),
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
+                    VaultPageHeader(
+                        eyebrow = stringResource(R.string.vault_brand_label),
+                        title = stringResource(
+                            R.string.steam_session_title_for_account,
+                            token.accountName,
+                        ),
+                        subtitle = if (session == null) {
+                            stringResource(R.string.steam_session_editor_description_new)
+                        } else {
+                            stringResource(R.string.steam_session_current_description)
+                        },
                     )
+                }
+                item {
+                    VaultProgressSteps(steps = progressSteps)
+                }
+                saveMessage?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Success,
+                        )
+                    }
+                }
+                saveError?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Error,
+                        )
+                    }
+                }
+                clearMessage?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Success,
+                        )
+                    }
+                }
+                clearError?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Error,
+                        )
+                    }
+                }
+                validationMessage?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Success,
+                        )
+                    }
+                }
+                validationError?.let { message ->
+                    item {
+                        VaultInlineBanner(
+                            text = message,
+                            tone = VaultBannerTone.Error,
+                        )
+                    }
                 }
                 if (entryContext?.kind == SteamSessionEntryContext.Kind.IMPORTED_EXISTING_AUTHENTICATOR) {
                     item {
@@ -346,13 +449,9 @@ fun SteamSessionScreen(
                             description = stringResource(R.string.steam_session_import_repair_description),
                         ) {
                             entryContext.suggestedSteamId?.let { steamId ->
-                                Text(
-                                    text = stringResource(
-                                        R.string.steam_session_import_repair_steam_id,
-                                        steamId,
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                VaultKeyValueRow(
+                                    label = stringResource(R.string.steam_session_detail_steam_id),
+                                    value = steamId,
                                 )
                             }
                             ChecklistRow(
@@ -412,18 +511,14 @@ fun SteamSessionScreen(
                             },
                             highlighted = steamTimeSyncState.lastSyncAt != null,
                         )
-                        Button(
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.steam_session_sync_time_action),
                             onClick = onSyncSteamTime,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_session_sync_time_action))
-                        }
-                        OutlinedButton(
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.steam_session_open_confirmations_action),
                             onClick = onOpenConfirmations,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_session_open_confirmations_action))
-                        }
+                        )
                     }
                 }
                 item {
@@ -432,25 +527,24 @@ fun SteamSessionScreen(
                         description = stringResource(R.string.steam_session_current_description),
                     ) {
                         if (session == null) {
-                            Text(
+                            VaultInlineBanner(
                                 text = stringResource(R.string.steam_session_current_none),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                tone = VaultBannerTone.Warning,
                             )
                         } else {
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_steam_id),
                                 value = session.steamId ?: stringResource(R.string.common_not_saved),
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_session_id),
                                 value = maskValue(context, session.sessionId),
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_oauth_token),
                                 value = maskValue(context, session.oauthToken),
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_cookies),
                                 value = if (session.cookies.isEmpty()) {
                                     stringResource(R.string.steam_session_cookies_none)
@@ -458,60 +552,38 @@ fun SteamSessionScreen(
                                     session.cookies.joinToString { it.name }
                                 },
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_created_at),
                                 value = session.createdAt,
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_updated_at),
                                 value = session.updatedAt,
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_validation_status),
                                 value = formatSessionValidationStatus(context, session.validationStatus),
                             )
-                            SessionDetailLine(
+                            VaultKeyValueRow(
                                 label = stringResource(R.string.steam_session_detail_last_validated),
                                 value = session.lastValidatedAt
                                     ?: stringResource(R.string.steam_session_last_validated_none),
                             )
                             session.lastValidationErrorMessage?.let { errorMessage ->
-                                SessionDetailLine(
+                                VaultKeyValueRow(
                                     label = stringResource(R.string.steam_session_detail_last_validation_error),
                                     value = errorMessage,
                                 )
                             }
                         }
-
-                        clearMessage?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        clearError?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                        validationMessage?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        validationError?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                        OutlinedButton(
+                        VaultPrimaryButton(
+                            text = stringResource(
+                                if (isValidatingSession) {
+                                    R.string.steam_session_validation_running
+                                } else {
+                                    R.string.steam_session_validation_action
+                                },
+                            ),
                             onClick = {
                                 scope.launch {
                                     validationMessage = null
@@ -536,19 +608,9 @@ fun SteamSessionScreen(
                                 }
                             },
                             enabled = session != null && !isValidatingSession,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (isValidatingSession) {
-                                        R.string.steam_session_validation_running
-                                    } else {
-                                        R.string.steam_session_validation_action
-                                    },
-                                ),
-                            )
-                        }
-                        OutlinedButton(
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.steam_session_clear_action),
                             onClick = {
                                 scope.launch {
                                     clearMessage = null
@@ -566,17 +628,12 @@ fun SteamSessionScreen(
                                 }
                             },
                             enabled = session != null,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_session_clear_action))
-                        }
-                        Button(
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.steam_session_open_confirmations_action),
                             onClick = onOpenConfirmations,
                             enabled = session != null,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_session_open_confirmations_action))
-                        }
+                        )
                     }
                 }
                 item {
@@ -585,36 +642,32 @@ fun SteamSessionScreen(
                         description = stringResource(R.string.steam_session_protocol_repair_description),
                     ) {
                         recoveryStatusMessage?.let { message ->
-                            Text(
+                            VaultInlineBanner(
                                 text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
+                                tone = VaultBannerTone.Success,
                             )
                         }
                         recoveryErrorMessage?.let { message ->
-                            Text(
+                            VaultInlineBanner(
                                 text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
+                                tone = VaultBannerTone.Error,
                             )
                         }
-                        OutlinedTextField(
+                        VaultTextField(
                             value = recoveryUsernameInput,
                             onValueChange = { recoveryUsernameInput = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(stringResource(R.string.steam_add_authenticator_protocol_username_label))
-                            },
+                            label = stringResource(
+                                R.string.steam_add_authenticator_protocol_username_label,
+                            ),
                             enabled = !isRecoveringSession,
                             singleLine = true,
                         )
-                        OutlinedTextField(
+                        VaultTextField(
                             value = recoveryPasswordInput,
                             onValueChange = { recoveryPasswordInput = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(stringResource(R.string.steam_add_authenticator_protocol_password_label))
-                            },
+                            label = stringResource(
+                                R.string.steam_add_authenticator_protocol_password_label,
+                            ),
                             enabled = !isRecoveringSession,
                             singleLine = true,
                             visualTransformation = PasswordVisualTransformation(),
@@ -625,7 +678,14 @@ fun SteamSessionScreen(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        Button(
+                        VaultPrimaryButton(
+                            text = stringResource(
+                                if (isRecoveringSession) {
+                                    R.string.steam_session_protocol_repair_action_running
+                                } else {
+                                    R.string.steam_session_protocol_repair_action
+                                },
+                            ),
                             onClick = {
                                 saveMessage = null
                                 saveError = null
@@ -638,29 +698,18 @@ fun SteamSessionScreen(
                                 startProtocolRecovery(token = token, session = session)
                             },
                             enabled = !isRecoveringSession,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                stringResource(
-                                    if (isRecoveringSession) {
-                                        R.string.steam_session_protocol_repair_action_running
-                                    } else {
-                                        R.string.steam_session_protocol_repair_action
-                                    },
-                                ),
-                            )
-                        }
+                        )
                         if (isRecoveringSession) {
-                            OutlinedButton(
+                            VaultSecondaryButton(
+                                text = stringResource(
+                                    R.string.steam_add_authenticator_challenge_cancel_action,
+                                ),
                                 onClick = {
                                     cancelProtocolRecovery(
                                         context.getString(R.string.steam_session_protocol_repair_cancelled),
                                     )
                                 },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(R.string.steam_add_authenticator_challenge_cancel_action))
-                            }
+                            )
                         }
                     }
                 }
@@ -674,40 +723,36 @@ fun SteamSessionScreen(
                                 is SteamProtocolLoginChallenge.EmailCode,
                                 is SteamProtocolLoginChallenge.DeviceCode,
                                 -> {
-                                    OutlinedTextField(
+                                    VaultTextField(
                                         value = recoveryChallengeCodeInput,
                                         onValueChange = { recoveryChallengeCodeInput = it },
-                                        modifier = Modifier.fillMaxWidth(),
-                                        label = {
-                                            Text(stringResource(R.string.steam_add_authenticator_challenge_code_label))
-                                        },
-                                        supportingText = {
-                                            Text(protocolRecoveryChallengeSupportingText(context, challenge))
-                                        },
+                                        label = stringResource(
+                                            R.string.steam_add_authenticator_challenge_code_label,
+                                        ),
+                                        supportingText = protocolRecoveryChallengeSupportingText(
+                                            context,
+                                            challenge,
+                                        ),
                                         singleLine = true,
                                     )
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            R.string.steam_add_authenticator_challenge_submit_action,
+                                        ),
                                         onClick = {
                                             val trimmedCode = recoveryChallengeCodeInput.trim()
                                             if (trimmedCode.isEmpty()) {
                                                 recoveryErrorMessage = context.getString(
                                                     R.string.steam_add_authenticator_challenge_code_required,
                                                 )
-                                                return@Button
+                                                return@VaultPrimaryButton
                                             }
                                             recoveryErrorMessage = null
                                             submitRecoveryChallenge(
                                                 SteamProtocolLoginChallengeAnswer.Code(trimmedCode),
                                             )
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_add_authenticator_challenge_submit_action,
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
 
                                 is SteamProtocolLoginChallenge.DeviceConfirmation -> {
@@ -718,7 +763,10 @@ fun SteamSessionScreen(
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
-                                    Button(
+                                    VaultPrimaryButton(
+                                        text = stringResource(
+                                            R.string.steam_add_authenticator_challenge_device_confirmation_approved_action,
+                                        ),
                                         onClick = {
                                             recoveryErrorMessage = null
                                             submitRecoveryChallenge(
@@ -727,15 +775,11 @@ fun SteamSessionScreen(
                                                 ),
                                             )
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_add_authenticator_challenge_device_confirmation_approved_action,
-                                            ),
-                                        )
-                                    }
-                                    OutlinedButton(
+                                    )
+                                    VaultSecondaryButton(
+                                        text = stringResource(
+                                            R.string.steam_add_authenticator_challenge_cancel_action,
+                                        ),
                                         onClick = {
                                             cancelProtocolRecovery(
                                                 context.getString(
@@ -743,14 +787,7 @@ fun SteamSessionScreen(
                                                 ),
                                             )
                                         },
-                                        modifier = Modifier.fillMaxWidth(),
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                R.string.steam_add_authenticator_challenge_cancel_action,
-                                            ),
-                                        )
-                                    }
+                                    )
                                 }
 
                                 is SteamProtocolLoginChallenge.QrCode -> Unit
@@ -764,32 +801,28 @@ fun SteamSessionScreen(
                         description = stringResource(R.string.steam_session_mafile_repair_description),
                     ) {
                         repairMessage?.let { message ->
-                            Text(
+                            VaultInlineBanner(
                                 text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
+                                tone = VaultBannerTone.Success,
                             )
                         }
                         repairError?.let { message ->
-                            Text(
+                            VaultInlineBanner(
                                 text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
+                                tone = VaultBannerTone.Error,
                             )
                         }
-                        OutlinedTextField(
+                        VaultTextField(
                             value = repairPayloadInput,
                             onValueChange = { repairPayloadInput = it },
-                            modifier = Modifier.fillMaxWidth(),
-                            label = {
-                                Text(stringResource(R.string.steam_session_mafile_repair_payload_label))
-                            },
-                            supportingText = {
-                                Text(stringResource(R.string.steam_session_mafile_repair_payload_supporting))
-                            },
+                            label = stringResource(R.string.steam_session_mafile_repair_payload_label),
+                            supportingText = stringResource(
+                                R.string.steam_session_mafile_repair_payload_supporting,
+                            ),
                             minLines = 5,
                         )
-                        Button(
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.steam_session_mafile_repair_action),
                             onClick = {
                                 scope.launch {
                                     repairMessage = null
@@ -839,10 +872,7 @@ fun SteamSessionScreen(
                                 }
                             },
                             enabled = repairPayloadInput.isNotBlank(),
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.steam_session_mafile_repair_action))
-                        }
+                        )
                     }
                 }
                 item {
@@ -856,91 +886,69 @@ fun SteamSessionScreen(
                             },
                         ),
                     ) {
-                        saveMessage?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        saveError?.let { message ->
-                            Text(
-                                text = message,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            OutlinedTextField(
-                                value = steamIdInput,
-                                onValueChange = { steamIdInput = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(stringResource(R.string.steam_session_editor_steam_id_label)) },
-                                singleLine = true,
-                            )
-                            OutlinedTextField(
-                                value = sessionIdInput,
-                                onValueChange = { sessionIdInput = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(stringResource(R.string.steam_session_editor_session_id_label)) },
-                                singleLine = true,
-                            )
-                            OutlinedTextField(
-                                value = oauthTokenInput,
-                                onValueChange = { oauthTokenInput = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(stringResource(R.string.steam_session_editor_oauth_token_label)) },
-                                singleLine = true,
-                            )
-                            OutlinedTextField(
-                                value = rawCookiesInput,
-                                onValueChange = { rawCookiesInput = it },
-                                modifier = Modifier.fillMaxWidth(),
-                                label = { Text(stringResource(R.string.steam_session_editor_cookies_label)) },
-                                supportingText = {
-                                    Text(stringResource(R.string.steam_session_editor_cookies_supporting))
-                                },
-                                minLines = 4,
-                            )
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        saveMessage = null
-                                        saveError = null
-                                        validationMessage = null
-                                        validationError = null
-                                        try {
-                                            val updatedSession = SteamSessionEditorParser.buildSessionRecord(
-                                                tokenId = tokenId,
-                                                accountName = token.accountName,
-                                                existingSession = session,
-                                                steamIdInput = steamIdInput,
-                                                sessionIdInput = sessionIdInput,
-                                                oauthTokenInput = oauthTokenInput,
-                                                rawCookiesInput = rawCookiesInput,
-                                            )
-                                            steamSessionRepository.saveSession(updatedSession)
-                                            saveMessage = context.getString(
-                                                if (session == null) {
-                                                    R.string.steam_session_save_success_new
-                                                } else {
-                                                    R.string.steam_session_save_success_update
-                                                },
-                                            )
-                                            localRefreshVersion += 1
-                                        } catch (error: SteamSessionEditorException) {
-                                            saveError = sessionEditorErrorMessage(context, error)
-                                        } catch (error: Exception) {
-                                            saveError = error.message
-                                                ?: context.getString(R.string.steam_session_save_failed)
-                                        }
+                        VaultTextField(
+                            value = steamIdInput,
+                            onValueChange = { steamIdInput = it },
+                            label = stringResource(R.string.steam_session_editor_steam_id_label),
+                            singleLine = true,
+                        )
+                        VaultTextField(
+                            value = sessionIdInput,
+                            onValueChange = { sessionIdInput = it },
+                            label = stringResource(R.string.steam_session_editor_session_id_label),
+                            singleLine = true,
+                        )
+                        VaultTextField(
+                            value = oauthTokenInput,
+                            onValueChange = { oauthTokenInput = it },
+                            label = stringResource(R.string.steam_session_editor_oauth_token_label),
+                            singleLine = true,
+                        )
+                        VaultTextField(
+                            value = rawCookiesInput,
+                            onValueChange = { rawCookiesInput = it },
+                            label = stringResource(R.string.steam_session_editor_cookies_label),
+                            supportingText = stringResource(
+                                R.string.steam_session_editor_cookies_supporting,
+                            ),
+                            minLines = 4,
+                        )
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.steam_session_save_action),
+                            onClick = {
+                                scope.launch {
+                                    saveMessage = null
+                                    saveError = null
+                                    validationMessage = null
+                                    validationError = null
+                                    try {
+                                        val updatedSession = SteamSessionEditorParser.buildSessionRecord(
+                                            tokenId = tokenId,
+                                            accountName = token.accountName,
+                                            existingSession = session,
+                                            steamIdInput = steamIdInput,
+                                            sessionIdInput = sessionIdInput,
+                                            oauthTokenInput = oauthTokenInput,
+                                            rawCookiesInput = rawCookiesInput,
+                                        )
+                                        steamSessionRepository.saveSession(updatedSession)
+                                        saveMessage = context.getString(
+                                            if (session == null) {
+                                                R.string.steam_session_save_success_new
+                                            } else {
+                                                R.string.steam_session_save_success_update
+                                            },
+                                        )
+                                        localRefreshVersion += 1
+                                    } catch (error: SteamSessionEditorException) {
+                                        saveError = sessionEditorErrorMessage(context, error)
+                                    } catch (error: Exception) {
+                                        saveError = error.message
+                                            ?: context.getString(R.string.steam_session_save_failed)
                                     }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(stringResource(R.string.steam_session_save_action))
-                            }
-                        }
+                                }
+                            },
+                        )
                     }
                 }
             }
@@ -952,18 +960,6 @@ private data class SteamSessionScreenState(
     val token: TokenRecord,
     val session: SteamSessionRecord?,
 )
-
-@Composable
-private fun SessionDetailLine(
-    label: String,
-    value: String,
-) {
-    Text(
-        text = stringResource(R.string.steam_session_detail_line, label, value),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
-}
 
 private fun formatOffset(
     context: android.content.Context,

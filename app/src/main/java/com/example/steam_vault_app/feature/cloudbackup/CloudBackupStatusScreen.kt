@@ -1,14 +1,10 @@
 package com.example.steam_vault_app.feature.cloudbackup
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,8 +28,12 @@ import com.example.steam_vault_app.domain.model.WebDavBackupConfiguration
 import com.example.steam_vault_app.domain.repository.CloudBackupRepository
 import com.example.steam_vault_app.domain.sync.CloudBackupSyncManager
 import com.example.steam_vault_app.ui.common.AppUiState
-import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
 import kotlinx.coroutines.launch
 
 @Composable
@@ -81,58 +81,45 @@ fun CloudBackupStatusScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.cloud_backup_status_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.cloud_status_modern_title),
+                subtitle = stringResource(R.string.cloud_status_modern_body),
             )
-        }
-        item {
-            ScreenSectionCard(
-                title = stringResource(R.string.cloud_backup_status_plan_title),
-                description = stringResource(R.string.cloud_backup_status_plan_description),
-            ) {
-                ChecklistRow(label = stringResource(R.string.cloud_backup_status_plan_encrypted_only), highlighted = true)
-                ChecklistRow(label = stringResource(R.string.cloud_backup_status_plan_manage_local_state), highlighted = true)
-                ChecklistRow(label = stringResource(R.string.cloud_backup_status_plan_manual_upload_restore), highlighted = true)
-            }
         }
         actionError?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
         }
         actionMessage?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
+                    tone = VaultBannerTone.Success,
                 )
             }
         }
         when (val currentState = statusState) {
-            AppUiState.Loading -> {
-                item {
-                    Text(stringResource(R.string.cloud_backup_status_loading))
-                }
+            AppUiState.Loading -> item {
+                VaultInlineBanner(
+                    text = stringResource(R.string.cloud_backup_status_loading),
+                    tone = VaultBannerTone.Neutral,
+                )
             }
 
-            is AppUiState.Error -> {
-                item {
-                    Text(
-                        text = currentState.message,
-                        color = MaterialTheme.colorScheme.error,
-                    )
-                }
+            is AppUiState.Error -> item {
+                VaultInlineBanner(
+                    text = currentState.message,
+                    tone = VaultBannerTone.Error,
+                )
             }
 
             is AppUiState.Success -> {
@@ -142,278 +129,186 @@ fun CloudBackupStatusScreen(
 
                 item {
                     ScreenSectionCard(
-                        title = stringResource(R.string.cloud_backup_status_configuration_title),
-                        description = syncStateDescription(context, status.syncState),
+                        title = stringResource(R.string.cloud_status_modern_connection_title),
+                        description = if (configuration == null) {
+                            stringResource(R.string.cloud_status_modern_connection_missing)
+                        } else {
+                            stringResource(R.string.cloud_status_modern_connection_ready)
+                        },
                     ) {
-                        ChecklistRow(
-                            label = if (configuration == null) {
-                                stringResource(R.string.cloud_backup_status_not_configured)
-                            } else {
-                                stringResource(R.string.cloud_backup_status_configured)
-                            },
-                            highlighted = configuration != null,
-                        )
                         configuration?.let {
-                            Text(
-                                text = context.getString(R.string.cloud_backup_status_service_url, it.serverUrl),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            CloudBackupLabelValue(
+                                label = stringResource(R.string.cloud_config_modern_url),
+                                value = it.serverUrl,
                             )
-                            Text(
-                                text = context.getString(R.string.cloud_backup_status_account, it.username),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            CloudBackupLabelValue(
+                                label = stringResource(R.string.cloud_config_modern_username),
+                                value = it.username,
                             )
-                            Text(
-                                text = context.getString(R.string.cloud_backup_status_remote_path, it.remotePath),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                            CloudBackupLabelValue(
+                                label = stringResource(R.string.cloud_config_modern_path),
+                                value = it.remotePath,
+                            )
+                        }
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.cloud_status_modern_edit_connection),
+                            onClick = onOpenConfiguration,
+                        )
+                    }
+                }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.cloud_status_modern_recent_title),
+                        description = stringResource(R.string.cloud_status_modern_recent_body),
+                    ) {
+                        CloudBackupLabelValue(
+                            label = stringResource(R.string.cloud_backup_status_last_upload_none),
+                            value = status.lastUploadAt ?: stringResource(R.string.cloud_backup_status_last_upload_none),
+                        )
+                        CloudBackupLabelValue(
+                            label = stringResource(R.string.cloud_backup_status_last_download_none),
+                            value = status.lastDownloadAt ?: stringResource(R.string.cloud_backup_status_last_download_none),
+                        )
+                        status.lastErrorMessage?.let { message ->
+                            VaultInlineBanner(
+                                text = message,
+                                tone = VaultBannerTone.Warning,
                             )
                         }
                     }
                 }
                 item {
                     ScreenSectionCard(
-                        title = stringResource(R.string.cloud_backup_status_records_title),
-                        description = stringResource(R.string.cloud_backup_status_records_description),
+                        title = stringResource(R.string.cloud_status_modern_auto_title),
+                        description = stringResource(R.string.cloud_status_modern_auto_body),
                     ) {
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_last_upload,
-                                status.lastUploadAt ?: context.getString(R.string.cloud_backup_status_last_upload_none),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        CloudBackupLabelValue(
+                            label = stringResource(R.string.cloud_backup_status_auto_state_label),
+                            value = automaticBackupStateDescription(context, status.autoBackupState),
                         )
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_last_download,
-                                status.lastDownloadAt ?: context.getString(R.string.cloud_backup_status_last_download_none),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        CloudBackupLabelValue(
+                            label = stringResource(R.string.cloud_backup_status_auto_reason_label),
+                            value = automaticBackupReasonDescription(context, status.autoBackupReason),
                         )
-                        if (!status.lastErrorMessage.isNullOrBlank()) {
-                            Text(
-                                text = context.getString(
-                                    R.string.cloud_backup_status_last_error,
-                                    status.lastErrorMessage,
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                        }
-                    }
-                }
-                item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.cloud_backup_status_auto_title),
-                        description = stringResource(R.string.cloud_backup_status_auto_description),
-                    ) {
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_auto_state,
-                                automaticBackupStateDescription(context, status.autoBackupState),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_auto_reason,
-                                automaticBackupReasonDescription(context, status.autoBackupReason),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_auto_updated_at,
-                                status.autoBackupUpdatedAt
-                                    ?: context.getString(R.string.cloud_backup_status_auto_updated_at_none),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_auto_next_run_at,
-                                status.autoBackupNextRunAt
-                                    ?: context.getString(R.string.cloud_backup_status_auto_next_run_at_none),
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Text(
-                            text = context.getString(
-                                R.string.cloud_backup_status_auto_failure_count,
-                                status.autoBackupFailureCount,
-                            ),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        CloudBackupLabelValue(
+                            label = stringResource(R.string.cloud_backup_status_auto_next_run_label),
+                            value = status.autoBackupNextRunAt
+                                ?: stringResource(R.string.cloud_backup_status_auto_next_run_at_none),
                         )
                     }
                 }
                 item {
                     ScreenSectionCard(
-                        title = stringResource(R.string.cloud_backup_status_versions_title),
-                        description = stringResource(R.string.cloud_backup_status_versions_description),
+                        title = stringResource(R.string.cloud_status_modern_versions_title),
+                        description = if (remoteVersions.isEmpty()) {
+                            stringResource(R.string.cloud_status_modern_versions_empty)
+                        } else {
+                            stringResource(R.string.cloud_backup_status_versions_count, remoteVersions.size)
+                        },
                     ) {
                         if (remoteVersions.isEmpty()) {
                             Text(
-                                text = stringResource(R.string.cloud_backup_status_versions_empty),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                text = stringResource(R.string.cloud_status_modern_versions_empty),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         } else {
-                            Text(
-                                text = stringResource(
-                                    R.string.cloud_backup_status_versions_count,
-                                    remoteVersions.size,
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
                             remoteVersions.forEach { version ->
-                                Text(
-                                    text = context.getString(
-                                        R.string.cloud_backup_status_version_label,
-                                        version.uploadedAt
-                                            ?: context.getString(R.string.cloud_backup_status_version_uploaded_at_unknown),
-                                    ),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Text(
-                                    text = context.getString(
-                                        R.string.cloud_backup_status_version_path,
-                                        version.remotePath,
-                                    ),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                                OutlinedButton(
-                                    onClick = {
-                                        scope.launch {
-                                            isWorking = true
-                                            actionError = null
-                                            actionMessage = null
-
-                                            try {
-                                                cloudBackupSyncManager.restoreBackup(version)
-                                                actionMessage = context.getString(
-                                                    R.string.cloud_backup_status_restore_version_success,
-                                                    version.uploadedAt
-                                                        ?: context.getString(
-                                                            R.string.cloud_backup_status_version_uploaded_at_unknown,
-                                                        ),
-                                                )
-                                                refreshVersion += 1
-                                                onCloudBackupRestored()
-                                            } catch (error: Exception) {
-                                                actionError = error.message
-                                                    ?: context.getString(
-                                                        R.string.cloud_backup_status_restore_version_failed,
-                                                    )
-                                            } finally {
-                                                isWorking = false
-                                            }
-                                        }
-                                    },
-                                    enabled = !isWorking,
-                                    modifier = Modifier.fillMaxWidth(),
+                                ScreenSectionCard(
+                                    title = version.uploadedAt
+                                        ?: stringResource(R.string.cloud_backup_status_version_uploaded_at_unknown),
+                                    description = version.remotePath,
                                 ) {
-                                    Text(stringResource(R.string.cloud_backup_status_restore_version_action))
+                                    VaultSecondaryButton(
+                                        text = stringResource(R.string.cloud_backup_status_restore_version_action),
+                                        onClick = {
+                                            scope.launch {
+                                                isWorking = true
+                                                actionError = null
+                                                actionMessage = null
+                                                try {
+                                                    cloudBackupSyncManager.restoreBackup(version)
+                                                    actionMessage = context.getString(
+                                                        R.string.cloud_backup_status_restore_version_success,
+                                                        version.uploadedAt
+                                                            ?: context.getString(R.string.cloud_backup_status_version_uploaded_at_unknown),
+                                                    )
+                                                    refreshVersion += 1
+                                                    onCloudBackupRestored()
+                                                } catch (error: Exception) {
+                                                    actionError = error.message
+                                                        ?: context.getString(R.string.cloud_backup_status_restore_version_failed)
+                                                } finally {
+                                                    isWorking = false
+                                                }
+                                            }
+                                        },
+                                        enabled = !isWorking,
+                                    )
                                 }
                             }
                         }
                     }
                 }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.cloud_status_modern_tools_title),
+                        description = syncStateDescription(context, status.syncState),
+                    ) {
+                        VaultPrimaryButton(
+                            text = stringResource(R.string.cloud_status_modern_upload_action),
+                            onClick = {
+                                scope.launch {
+                                    isWorking = true
+                                    actionError = null
+                                    actionMessage = null
+                                    try {
+                                        cloudBackupSyncManager.uploadCurrentBackup()
+                                        actionMessage = context.getString(R.string.cloud_backup_status_upload_success)
+                                        refreshVersion += 1
+                                    } catch (error: Exception) {
+                                        actionError = error.message ?: context.getString(R.string.cloud_backup_status_upload_failed)
+                                    } finally {
+                                        isWorking = false
+                                    }
+                                }
+                            },
+                            enabled = !isWorking,
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.cloud_status_modern_restore_latest_action),
+                            onClick = {
+                                scope.launch {
+                                    isWorking = true
+                                    actionError = null
+                                    actionMessage = null
+                                    try {
+                                        cloudBackupSyncManager.restoreLatestBackup()
+                                        actionMessage = context.getString(R.string.cloud_backup_status_restore_success)
+                                        refreshVersion += 1
+                                        onCloudBackupRestored()
+                                    } catch (error: Exception) {
+                                        actionError = error.message ?: context.getString(R.string.cloud_backup_status_restore_failed)
+                                    } finally {
+                                        isWorking = false
+                                    }
+                                }
+                            },
+                            enabled = !isWorking,
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.cloud_status_modern_local_export),
+                            onClick = onOpenLocalBackupExport,
+                        )
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.cloud_status_modern_local_restore),
+                            onClick = onOpenLocalBackupRestore,
+                        )
+                    }
+                }
             }
 
             AppUiState.Empty -> Unit
-        }
-        item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            isWorking = true
-                            actionError = null
-                            actionMessage = null
-
-                            try {
-                                cloudBackupSyncManager.uploadCurrentBackup()
-                                actionMessage = context.getString(R.string.cloud_backup_status_upload_success)
-                                refreshVersion += 1
-                            } catch (error: Exception) {
-                                actionError = error.message ?: context.getString(R.string.cloud_backup_status_upload_failed)
-                            } finally {
-                                isWorking = false
-                            }
-                        }
-                    },
-                    enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isWorking) {
-                                R.string.cloud_backup_status_upload_action_loading
-                            } else {
-                                R.string.cloud_backup_status_upload_action_idle
-                            },
-                        ),
-                    )
-                }
-                OutlinedButton(
-                    onClick = {
-                        scope.launch {
-                            isWorking = true
-                            actionError = null
-                            actionMessage = null
-
-                            try {
-                                cloudBackupSyncManager.restoreLatestBackup()
-                                actionMessage = context.getString(R.string.cloud_backup_status_restore_success)
-                                refreshVersion += 1
-                                onCloudBackupRestored()
-                            } catch (error: Exception) {
-                                actionError = error.message ?: context.getString(R.string.cloud_backup_status_restore_failed)
-                            } finally {
-                                isWorking = false
-                            }
-                        }
-                    },
-                    enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.cloud_backup_status_restore_action))
-                }
-                OutlinedButton(
-                    onClick = onOpenConfiguration,
-                    enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.cloud_backup_status_edit_config))
-                }
-                OutlinedButton(
-                    onClick = onOpenLocalBackupExport,
-                    enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.cloud_backup_status_open_local_export))
-                }
-                OutlinedButton(
-                    onClick = onOpenLocalBackupRestore,
-                    enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.cloud_backup_status_open_local_restore))
-                }
-            }
         }
     }
 }
@@ -423,6 +318,18 @@ private data class CloudBackupStatusPageState(
     val status: CloudBackupStatus,
     val remoteVersions: List<CloudBackupRemoteVersion>,
 )
+
+@Composable
+private fun CloudBackupLabelValue(
+    label: String,
+    value: String,
+) {
+    Text(
+        text = "$label  $value",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+}
 
 private fun automaticBackupStateDescription(
     context: android.content.Context,

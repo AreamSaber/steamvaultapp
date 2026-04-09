@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SteamVault - 添加账户</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#005FB7",
+                        "on-primary": "#FFFFFF",
+                        "primary-container": "#D6E3FF",
+                        "on-primary-container": "#001B3C",
+                        "surface": "#1A1C1E",
+                        "on-surface": "#E2E2E5",
+                        "surface-variant": "#414752",
+                        "on-surface-variant": "#C1C6D4",
+                        "outline": "#8C919D",
+                        "background": "#121416",
+                        "error": "#BA1A1A",
+                        "success": "#2E7D32"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .monolith-gradient {
+            background: linear-gradient(135deg, #005FB7 0%, #00468A 100%);
+        }
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body selection:bg-primary/30">
+<!-- TopAppBar from COMPONENTS_9 -->
+<header class="fixed top-0 w-full z-50 bg-[#121416] flex items-center justify-between px-6 py-4 w-full max-w-full">
+<div class="flex items-center gap-4">
+<button class="hover:bg-[#1a1c1e] transition-colors duration-200 p-2 rounded-full active:scale-95 duration-100">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="font-['Manrope'] font-bold tracking-tight text-on-surface text-lg">添加 Steam 账号</h1>
+</div>
+<div class="text-xl font-extrabold text-[#005FB7] tracking-tighter">
+        SteamVault
+    </div>
+</header>
+<main class="pt-24 pb-32 px-6 max-w-2xl mx-auto">
+<!-- Hero Header per TEXT_11 -->
+<header class="mb-10">
+<h2 class="font-headline font-extrabold text-3xl tracking-tight mb-3 text-on-surface">添加账户</h2>
+<p class="text-on-surface-variant leading-relaxed text-sm">选择一种方式将您的 Steam 令牌添加到本地库中。</p>
+</header>
+<!-- Main Selection Grid -->
+<div class="flex flex-col gap-6">
+<!-- Recommended Path: Login -->
+<section class="group relative overflow-hidden rounded-3xl bg-surface p-8 transition-all duration-300 border border-surface-variant/20 hover:border-primary/30 shadow-lg">
+<div class="absolute top-0 right-0 p-4">
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-3 py-1 rounded-full tracking-wider uppercase">推荐</span>
+</div>
+<div class="mb-6 h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-3xl">sync_saved_locally</span>
+</div>
+<h3 class="font-headline font-bold text-xl mb-3 text-on-surface">登录添加</h3>
+<p class="text-on-surface-variant text-sm mb-8 leading-relaxed">
+                通过 Steam 官方登录授权，系统将自动安全提取令牌信息并存储在本地，无需手动处理文件。
+            </p>
+<button class="w-full monolith-gradient text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span>开始登录</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+<!-- Subtle decorative background icon -->
+<div class="absolute -bottom-6 -right-6 opacity-[0.03] pointer-events-none">
+<span class="material-symbols-outlined text-[140px]">security</span>
+</div>
+</section>
+<!-- Expert Path: Import -->
+<section class="rounded-3xl bg-surface p-8 transition-all duration-300 border border-surface-variant/20">
+<div class="flex items-center gap-4 mb-6">
+<div class="h-10 w-10 rounded-xl bg-surface-variant/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">key</span>
+</div>
+<h3 class="font-headline font-bold text-xl text-on-surface">兼容导入</h3>
+</div>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                适合高级用户。支持导入 <code class="font-mono bg-background px-1.5 py-0.5 rounded text-xs">.maFile</code> 文件或手动输入令牌密钥。
+            </p>
+<!-- Drag & Drop Zone -->
+<div class="relative group mb-8">
+<div class="absolute inset-0 bg-primary/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative border-2 border-dashed border-surface-variant/40 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary/50 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-on-surface-variant mb-2 text-3xl">upload_file</span>
+<p class="text-sm text-on-surface-variant font-medium">点击上传或将文件拖至此处</p>
+<p class="text-[11px] text-outline mt-1">支持 .maFile, .json 格式</p>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<button class="w-full bg-surface-variant/50 hover:bg-surface-variant text-on-surface font-semibold py-4 rounded-xl active:scale-[0.98] transition-all">
+                    导入密钥
+                </button>
+<p class="text-[11px] text-center text-outline italic px-4">
+                    SteamVault 仅在本地解密并存储您的令牌，绝不上传至任何服务器。
+                </p>
+</div>
+</section>
+</div>
+<!-- Security Badge from TEXT_11 & DESIGN_SYSTEM_1 -->
+<div class="mt-12 flex items-center justify-center gap-2 opacity-50">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="text-[10px] font-bold tracking-[0.2em] uppercase">End-to-End Local Encryption</span>
+</div>
+</main>
+<!-- BottomNavBar from COMPONENTS_9 -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-8 bg-[#121416]/60 backdrop-blur-xl z-50 rounded-t-3xl shadow-[0_-8px_32px_rgba(0,95,183,0.06)]">
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-white transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">lock</span>
+<span class="font-['Inter'] text-[10px] font-medium">Vault</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-white transition-all active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">security</span>
+<span class="font-['Inter'] text-[10px] font-medium">Security</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#005FB7] text-white rounded-full px-6 py-1.5 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined mb-1">settings</span>
+<span class="font-['Inter'] text-[10px] font-medium">Settings</span>
+</a>
+</nav>
+<!-- Decorative Background Elements from DESIGN_SYSTEM_1 -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-primary/5 blur-[150px]"></div>
+</div>
+</body></html>

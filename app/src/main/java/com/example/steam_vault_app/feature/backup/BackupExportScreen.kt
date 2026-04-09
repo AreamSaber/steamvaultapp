@@ -7,9 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +25,10 @@ import com.example.steam_vault_app.R
 import com.example.steam_vault_app.data.backup.LocalBackupPayloadCodec
 import com.example.steam_vault_app.domain.repository.VaultRepository
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -68,11 +70,7 @@ fun BackupExportScreen(
             }
 
             try {
-                writeBackupPayload(
-                    context = context,
-                    uri = uri,
-                    payload = payload,
-                )
+                writeBackupPayload(context, uri, payload)
                 statusMessage = context.getString(
                     R.string.backup_export_saved,
                     pendingFileName ?: context.getString(R.string.backup_export_selected_file_fallback),
@@ -91,33 +89,55 @@ fun BackupExportScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.backup_export_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.backup_export_modern_title),
+                subtitle = stringResource(R.string.backup_export_modern_body),
             )
+        }
+        statusMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
+                )
+            }
+        }
+        errorMessage?.let { message ->
+            item {
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Error,
+                )
+            }
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.backup_export_section_title),
-                description = stringResource(R.string.backup_export_section_description),
+                title = stringResource(R.string.backup_export_modern_card_title),
+                description = stringResource(R.string.backup_export_modern_card_body),
             ) {
                 Text(
-                    text = stringResource(R.string.backup_export_warning),
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = stringResource(R.string.backup_export_modern_caution),
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isWorking) {
+                            R.string.backup_export_modern_action_loading
+                        } else {
+                            R.string.backup_export_modern_action
+                        },
+                    ),
                     onClick = {
                         scope.launch {
                             isWorking = true
                             statusMessage = null
                             errorMessage = null
-
                             try {
                                 val backupPackage = vaultRepository.exportLocalBackup()
                                 val payload = LocalBackupPayloadCodec.encode(backupPackage)
@@ -127,43 +147,11 @@ fun BackupExportScreen(
                                 createDocumentLauncher.launch(suggestedFileName)
                             } catch (_: Exception) {
                                 errorMessage = context.getString(R.string.backup_export_generate_failed)
-                                statusMessage = null
-                                pendingPayload = null
-                                pendingFileName = null
                                 isWorking = false
                             }
                         }
                     },
                     enabled = !isWorking,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isWorking) {
-                                R.string.backup_export_action_loading
-                            } else {
-                                R.string.backup_export_action_idle
-                            },
-                        ),
-                    )
-                }
-            }
-        }
-        statusMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-        errorMessage?.let { message ->
-            item {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
                 )
             }
         }

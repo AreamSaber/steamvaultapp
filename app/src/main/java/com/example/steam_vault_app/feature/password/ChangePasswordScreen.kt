@@ -1,16 +1,9 @@
 package com.example.steam_vault_app.feature.password
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +18,11 @@ import androidx.compose.ui.unit.dp
 import com.example.steam_vault_app.R
 import com.example.steam_vault_app.ui.common.ChecklistRow
 import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultTextField
 
 @Composable
 fun ChangePasswordScreen(
@@ -41,22 +39,15 @@ fun ChangePasswordScreen(
     val matches = password.isNotBlank() && password == confirmation
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier,
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.change_password_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-        }
-        item {
-            Text(
-                text = stringResource(R.string.change_password_description),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.change_password_title),
+                subtitle = stringResource(R.string.change_password_description),
             )
         }
         item {
@@ -84,56 +75,50 @@ fun ChangePasswordScreen(
         }
         errorMessage?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
         }
         item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ScreenSectionCard(
+                title = stringResource(R.string.change_password_title),
+                description = stringResource(R.string.change_password_description),
             ) {
-                OutlinedTextField(
+                VaultTextField(
                     value = password,
                     onValueChange = { password = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.label_new_master_password)) },
+                    label = stringResource(R.string.label_new_master_password),
                     singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Next,
                     ),
+                    visualTransformation = PasswordVisualTransformation(),
                 )
-                OutlinedTextField(
+                VaultTextField(
                     value = confirmation,
                     onValueChange = { confirmation = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.label_confirm_new_password)) },
+                    label = stringResource(R.string.label_confirm_new_password),
                     singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
                     ),
+                    visualTransformation = PasswordVisualTransformation(),
                 )
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isSubmitting) {
+                            R.string.change_password_action_loading
+                        } else {
+                            R.string.change_password_action_idle
+                        },
+                    ),
                     onClick = { onPasswordChanged(password) },
                     enabled = hasLength && hasMixedInput && matches && !isSubmitting,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isSubmitting) {
-                                R.string.change_password_action_loading
-                            } else {
-                                R.string.change_password_action_idle
-                            },
-                        ),
-                    )
-                }
+                )
             }
         }
     }

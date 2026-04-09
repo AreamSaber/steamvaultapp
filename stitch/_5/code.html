@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>配置云备份 - SteamVault</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed-dim": "#ffb68f",
+                    "on-tertiary": "#542100",
+                    "on-primary": "#003062",
+                    "inverse-on-surface": "#2f3133",
+                    "primary-fixed": "#d6e3ff",
+                    "on-error-container": "#ffdad6",
+                    "on-error": "#690005",
+                    "on-primary-fixed-variant": "#00468a",
+                    "background": "#121416",
+                    "on-secondary-fixed-variant": "#324769",
+                    "secondary-fixed": "#d6e3ff",
+                    "on-surface-variant": "#c1c6d4",
+                    "surface-container": "#1e2022",
+                    "tertiary": "#ffb68f",
+                    "on-tertiary-fixed-variant": "#773200",
+                    "surface-variant": "#333537",
+                    "surface-dim": "#121416",
+                    "inverse-primary": "#005eb4",
+                    "error-container": "#93000a",
+                    "on-background": "#e2e2e5",
+                    "on-surface": "#e2e2e5",
+                    "surface-bright": "#37393b",
+                    "primary-container": "#005fb7",
+                    "primary": "#a8c8ff",
+                    "on-primary-fixed": "#001b3c",
+                    "on-primary-container": "#c9dbff",
+                    "outline": "#8c919d",
+                    "on-tertiary-fixed": "#331100",
+                    "surface-container-lowest": "#0c0e10",
+                    "on-tertiary-container": "#ffd1bb",
+                    "on-secondary": "#1a3151",
+                    "surface-container-highest": "#333537",
+                    "secondary-fixed-dim": "#b2c7f0",
+                    "on-secondary-fixed": "#011b3b",
+                    "surface-tint": "#a8c8ff",
+                    "error": "#ffb4ab",
+                    "surface-container-low": "#1a1c1e",
+                    "secondary": "#b2c7f0",
+                    "tertiary-fixed": "#ffdbca",
+                    "surface-container-high": "#282a2c",
+                    "outline-variant": "#414752",
+                    "secondary-container": "#324769",
+                    "surface": "#121416",
+                    "tertiary-container": "#9f4500",
+                    "on-secondary-container": "#a0b6de",
+                    "inverse-surface": "#e2e2e5",
+                    "primary-fixed-dim": "#a8c8ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121416;
+            color: #e2e2e5;
+        }
+        .mono-font { font-family: 'JetBrains Mono', monospace; }
+        .headline-font { font-family: 'Manrope', sans-serif; }
+    </style>
+<style>
+        body {
+          min-height: 100dvh;
+        }
+        .pb-action-area {
+            padding-bottom: 240px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky z-50 bg-[#121416] flex items-center justify-between px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-[#a8c8ff]" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-['Manrope'] font-black tracking-tighter text-lg text-[#a8c8ff]">SteamVault</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-[#1a1c1e] transition-colors text-[#414752]">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<button class="p-2 rounded-full hover:bg-[#1a1c1e] transition-colors text-[#414752]">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</header>
+<main class="max-w-xl mx-auto px-6 pt-6 pb-action-area">
+<!-- Editorial Header -->
+<div class="mb-8">
+<h1 class="font-headline font-extrabold text-4xl tracking-tight text-on-surface mb-3">配置云备份</h1>
+<p class="text-on-surface-variant font-body leading-relaxed">连接 WebDAV（如坚果云）用于存放加密备份。</p>
+</div>
+<!-- Form Layout -->
+<div class="space-y-6">
+<!-- Glassmorphism Card for Main Input -->
+<div class="bg-surface-container-low rounded-xl p-6 shadow-sm border border-outline-variant/10">
+<div class="space-y-6">
+<!-- URL Input -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">WebDAV URL</label>
+<div class="relative group">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 focus:ring-0 focus:bg-surface-bright transition-all text-on-surface placeholder:text-outline/50 mono-font" placeholder="https://dav.jianguoyun.com/dav/" type="text"/>
+<div class="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-focus-within:w-full"></div>
+</div>
+</div>
+<!-- Grid for Credentials -->
+<div class="grid grid-cols-1 gap-6">
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Username</label>
+<div class="relative group">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 focus:ring-0 focus:bg-surface-bright transition-all text-on-surface placeholder:text-outline/50" placeholder="账户名称" type="text"/>
+<div class="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-focus-within:w-full"></div>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">App Password</label>
+<div class="relative group">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 focus:ring-0 focus:bg-surface-bright transition-all text-on-surface placeholder:text-outline/50" placeholder="应用专用密码" type="password"/>
+<div class="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-focus-within:w-full"></div>
+</div>
+</div>
+</div>
+<!-- Remote Path -->
+<div class="space-y-2">
+<label class="text-xs font-bold uppercase tracking-widest text-on-surface-variant ml-1">Remote Path</label>
+<div class="relative group">
+<input class="w-full bg-surface-container-highest border-none rounded-lg px-4 py-4 focus:ring-0 focus:bg-surface-bright transition-all text-on-surface placeholder:text-outline/50 mono-font" placeholder="/SteamVault/backups" type="text"/>
+<div class="absolute bottom-0 left-0 w-0 h-[2px] bg-primary transition-all duration-300 group-focus-within:w-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Hint Section -->
+<div class="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant/10 flex items-start gap-4">
+<div class="p-2 bg-tertiary-container rounded-lg shrink-0">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div class="flex-1">
+<p class="text-sm text-on-surface-variant leading-relaxed">
+                        建议使用应用专用密码，而不是网页登录密码，以确保账户安全。
+                    </p>
+<button class="mt-2 text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-1 hover:underline">
+                        查看如何获取 
+                        <span class="material-symbols-outlined text-xs">arrow_outward</span>
+</button>
+</div>
+</div>
+<!-- Connection Status -->
+<div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="text-sm font-bold text-on-surface mb-1">连接状态</h3>
+<div class="flex items-center gap-2">
+<span class="h-2 w-2 rounded-full bg-outline-variant animate-pulse"></span>
+<span class="text-xs text-on-surface-variant font-medium">等待测试连接</span>
+</div>
+</div>
+<button class="px-5 py-2.5 bg-surface-container-high rounded-full text-xs font-bold hover:bg-surface-bright transition-colors border border-outline-variant/30 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">wifi_tethering</span>
+                        测试连接
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom Action Area -->
+<div class="fixed bottom-20 left-0 w-full z-40 bg-gradient-to-t from-background via-background/95 to-transparent px-6 pb-6 pt-10">
+<div class="max-w-xl mx-auto">
+<button class="w-full bg-gradient-to-r from-[#005fb7] to-[#a8c8ff] text-on-primary py-5 rounded-full font-bold text-lg shadow-xl shadow-primary-container/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">save</span>
+                保存配置
+            </button>
+<p class="mt-4 text-center text-[10px] text-outline font-medium tracking-wide uppercase">
+                所有数据将经过 AES-256 军事级加密后上传
+            </p>
+</div>
+</div>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe bg-[#121416]/90 backdrop-blur-xl flex justify-around items-center px-4 h-20 shadow-[0_-8px_32px_rgba(0,0,0,0.4)] border-t border-white/5">
+<a class="flex flex-col items-center justify-center text-[#414752] px-6 py-1.5 hover:text-[#a8c8ff] group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">lock</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest">Vault</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#414752] px-6 py-1.5 hover:text-[#a8c8ff] group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">backup</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest">Backup</span>
+</a>
+<div class="flex flex-col items-center justify-center bg-[#005fb7] text-white rounded-full px-6 py-1.5 scale-95 shadow-lg shadow-primary-container/30">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">cloud_sync</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest">Cloud</span>
+</div>
+<a class="flex flex-col items-center justify-center text-[#414752] px-6 py-1.5 hover:text-[#a8c8ff] group" href="#">
+<span class="material-symbols-outlined mb-1 group-active:scale-90 transition-transform">settings</span>
+<span class="font-['Inter'] text-[10px] font-semibold uppercase tracking-widest">Settings</span>
+</a>
+</nav>
+</body></html>

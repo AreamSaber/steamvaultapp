@@ -4,19 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -24,8 +19,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.example.steam_vault_app.R
-import com.example.steam_vault_app.ui.common.ChecklistRow
-import com.example.steam_vault_app.ui.common.ScreenSectionCard
+import com.example.steam_vault_app.ui.common.VaultBannerTone
+import com.example.steam_vault_app.ui.common.VaultInlineBanner
+import com.example.steam_vault_app.ui.common.VaultPageHeader
+import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
+import com.example.steam_vault_app.ui.common.VaultTextField
 
 @Composable
 fun UnlockScreen(
@@ -41,38 +40,33 @@ fun UnlockScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
-            Text(
-                text = stringResource(R.string.unlock_screen_title),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
+            VaultPageHeader(
+                eyebrow = stringResource(R.string.vault_brand_label),
+                title = stringResource(R.string.unlock_modern_title),
+                subtitle = stringResource(R.string.unlock_modern_body),
             )
         }
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.unlock_behavior_title),
-                description = stringResource(R.string.unlock_behavior_description),
-            ) {
-                ChecklistRow(
-                    label = stringResource(R.string.unlock_behavior_verify_password),
-                    highlighted = true,
-                )
-                ChecklistRow(
-                    label = stringResource(R.string.unlock_behavior_resume_session),
-                    highlighted = true,
-                )
-                ChecklistRow(label = stringResource(R.string.unlock_behavior_biometric_hint))
-            }
+            VaultInlineBanner(
+                text = stringResource(
+                    if (showBiometricUnlock) {
+                        R.string.unlock_modern_hint_biometric
+                    } else {
+                        R.string.unlock_modern_hint_password
+                    },
+                ),
+                tone = VaultBannerTone.Neutral,
+            )
         }
         errorMessage?.let { message ->
             item {
-                Text(
+                VaultInlineBanner(
                     text = message,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
+                    tone = VaultBannerTone.Error,
                 )
             }
         }
@@ -80,49 +74,40 @@ fun UnlockScreen(
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                OutlinedTextField(
+                VaultTextField(
                     value = password,
                     onValueChange = { password = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text(stringResource(R.string.label_master_password)) },
+                    label = stringResource(R.string.unlock_modern_field_password),
                     singleLine = true,
-                    visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done,
                     ),
+                    visualTransformation = PasswordVisualTransformation(),
                 )
-                Button(
+                VaultPrimaryButton(
+                    text = stringResource(
+                        if (isSubmitting) {
+                            R.string.unlock_modern_primary_loading
+                        } else {
+                            R.string.unlock_modern_primary
+                        },
+                    ),
                     onClick = { onUnlock(password) },
                     enabled = password.isNotBlank() && !isSubmitting,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        stringResource(
-                            if (isSubmitting) {
-                                R.string.unlock_action_loading
-                            } else {
-                                R.string.unlock_action_idle
-                            },
-                        ),
-                    )
-                }
+                )
                 if (showBiometricUnlock) {
-                    OutlinedButton(
+                    VaultSecondaryButton(
+                        text = stringResource(R.string.unlock_modern_secondary_biometric),
                         onClick = onUnlockWithBiometric,
                         enabled = !isSubmitting,
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.unlock_action_biometric))
-                    }
+                    )
                 }
-                OutlinedButton(
+                VaultSecondaryButton(
+                    text = stringResource(R.string.unlock_modern_secondary_restore),
                     onClick = onRestoreBackup,
                     enabled = !isSubmitting,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(stringResource(R.string.unlock_action_restore_backup))
-                }
+                )
             }
         }
     }
