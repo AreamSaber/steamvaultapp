@@ -36,6 +36,7 @@ private data class ImportMethod(
 @Composable
 fun ImportTokenScreen(
     onOpenSteamAddAuthenticator: () -> Unit,
+    onOpenSteamBrowserLogin: () -> Unit,
     onSaveImport: (rawPayload: String, accountName: String, sharedSecret: String) -> Unit,
     isSubmitting: Boolean,
     errorMessage: String?,
@@ -232,6 +233,12 @@ fun ImportTokenScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(R.string.import_login_path_action))
+                }
+                OutlinedButton(
+                    onClick = onOpenSteamBrowserLogin,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(R.string.import_login_path_browser_fallback_action))
                 }
             }
         }

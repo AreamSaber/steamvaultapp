@@ -32,6 +32,7 @@ import com.example.steam_vault_app.feature.importtoken.ImportTokenEntryContext
 import com.example.steam_vault_app.feature.importtoken.ImportTokenScreen
 import com.example.steam_vault_app.feature.importtoken.ImportTokenEntryContextStore
 import com.example.steam_vault_app.feature.importtoken.SteamAddAuthenticatorScreen
+import com.example.steam_vault_app.feature.importtoken.SteamProtocolLoginScreen
 import com.example.steam_vault_app.feature.importtoken.SteamAuthenticatorBindingScreen
 import com.example.steam_vault_app.feature.password.ChangePasswordScreen
 import com.example.steam_vault_app.feature.password.CreatePasswordScreen
@@ -171,6 +172,9 @@ fun SteamVaultNavHost(
             }
             ImportTokenScreen(
                 onOpenSteamAddAuthenticator = {
+                    navController.navigate(AppRoute.SteamProtocolLogin.route)
+                },
+                onOpenSteamBrowserLogin = {
                     navController.navigate(AppRoute.SteamAddAuthenticator.route)
                 },
                 onSaveImport = { rawPayload, accountName, sharedSecret ->
@@ -186,11 +190,20 @@ fun SteamVaultNavHost(
                 entryContext = importEntryContext,
             )
         }
+        composable(AppRoute.SteamProtocolLogin.route) {
+            SteamProtocolLoginScreen(
+                bindingContextRepository = steamAuthenticatorBindingContextRepository,
+                enrollmentDraftRepository = steamAuthenticatorEnrollmentDraftRepository,
+                steamProtocolLoginOrchestrator = steamProtocolLoginOrchestrator,
+                onOpenBindingPreparation = {
+                    navController.navigate(AppRoute.SteamAuthenticatorBinding.route)
+                },
+            )
+        }
         composable(AppRoute.SteamAddAuthenticator.route) {
             SteamAddAuthenticatorScreen(
                 bindingContextRepository = steamAuthenticatorBindingContextRepository,
                 enrollmentDraftRepository = steamAuthenticatorEnrollmentDraftRepository,
-                steamProtocolLoginOrchestrator = steamProtocolLoginOrchestrator,
                 onOpenBindingPreparation = {
                     navController.navigate(AppRoute.SteamAuthenticatorBinding.route)
                 },

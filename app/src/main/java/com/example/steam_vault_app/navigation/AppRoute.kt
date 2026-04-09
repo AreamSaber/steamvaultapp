@@ -63,6 +63,13 @@ sealed class AppRoute(
         isSensitive = true,
     )
 
+    data object SteamProtocolLogin : AppRoute(
+        route = "steam_protocol_login",
+        titleResId = R.string.route_title_steam_add_authenticator,
+        shortLabelResId = R.string.route_short_steam_add_authenticator,
+        isSensitive = true,
+    )
+
     data object SteamAddAuthenticator : AppRoute(
         route = "steam_add_authenticator",
         titleResId = R.string.route_title_steam_add_authenticator,
@@ -153,6 +160,7 @@ sealed class AppRoute(
             Tokens,
             TokenDetail,
             Import,
+            SteamProtocolLogin,
             SteamAddAuthenticator,
             SteamAuthenticatorBinding,
             Settings,

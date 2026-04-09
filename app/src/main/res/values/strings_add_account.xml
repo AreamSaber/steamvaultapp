@@ -11,6 +11,7 @@
     <string name="import_login_path_check_verify">Complete email, device code, or device confirmation challenges in-app</string>
     <string name="import_login_path_check_bind_authenticator">Continue directly into authenticator binding with the structured mobile session</string>
     <string name="import_login_path_action">Sign In and Add Authenticator</string>
+    <string name="import_login_path_browser_fallback_action">Fallback: Browser Login (Legacy)</string>
     <string name="import_fallback_title">Compatibility Import</string>
     <string name="import_fallback_description">If you already have shared_secret, JSON, or an otpauth URI, you can still import it directly.</string>
     <string name="import_fallback_note">This path stays available for migration and compatibility, but it is no longer the primary onboarding flow.</string>
