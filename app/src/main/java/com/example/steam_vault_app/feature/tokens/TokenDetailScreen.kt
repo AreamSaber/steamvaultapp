@@ -10,10 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -89,8 +90,8 @@ fun TokenDetailScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         when (val currentState = tokenState) {
             AppUiState.Loading -> item {
@@ -118,6 +119,7 @@ fun TokenDetailScreen(
                     vaultCryptography = vaultCryptography,
                     errorCodeDisplay = context.getString(R.string.token_code_error_display),
                 )
+                val isCodeExpiringSoon = snapshot.secondsRemaining <= 5
 
                 item {
                     VaultPageHeader(
@@ -143,64 +145,72 @@ fun TokenDetailScreen(
                     }
                 }
                 item {
-                    ScreenSectionCard(
-                        title = stringResource(R.string.token_detail_modern_code_title),
-                        description = stringResource(R.string.token_detail_modern_code_body),
+                    Surface(
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp),
-                            contentAlignment = Alignment.Center,
+                        Column(
+                            modifier = Modifier.padding(20.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
                         ) {
-                            CircularProgressIndicator(
-                                progress = { snapshot.progress },
-                                modifier = Modifier.size(180.dp),
-                                strokeWidth = 8.dp,
-                                color = if (snapshot.secondsRemaining <= 5) {
-                                    MaterialTheme.colorScheme.tertiary
-                                } else {
-                                    MaterialTheme.colorScheme.primary
-                                },
-                                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                            Text(
+                                text = stringResource(R.string.token_detail_modern_code_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            Text(
+                                text = stringResource(R.string.token_detail_modern_code_body),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.large,
+                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
                             ) {
-                                Text(
-                                    text = snapshot.codeDisplay,
-                                    style = MaterialTheme.typography.displayMedium,
-                                    fontFamily = FontFamily.Monospace,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Text(
-                                    text = stringResource(
-                                        R.string.token_detail_modern_time_remaining,
-                                        snapshot.secondsRemaining,
-                                    ),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                        VaultPrimaryButton(
-                            text = stringResource(R.string.vault_copy_action),
-                            onClick = {
-                                if (!snapshot.hasSecretError) {
-                                    clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
-                                    copyMessage = context.getString(R.string.token_detail_modern_copy_success)
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 22.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    Text(
+                                        text = snapshot.codeDisplay,
+                                        style = MaterialTheme.typography.displayMedium,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            R.string.token_detail_modern_time_remaining,
+                                            snapshot.secondsRemaining,
+                                        ),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (isCodeExpiringSoon) {
+                                            MaterialTheme.colorScheme.tertiary
+                                        } else {
+                                            MaterialTheme.colorScheme.primary
+                                        },
+                                    )
                                 }
-                            },
-                            enabled = !snapshot.hasSecretError,
-                        )
+                            }
+                            VaultPrimaryButton(
+                                text = stringResource(R.string.vault_copy_action),
+                                onClick = {
+                                    if (!snapshot.hasSecretError) {
+                                        clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
+                                        copyMessage = context.getString(R.string.token_detail_modern_copy_success)
+                                    }
+                                },
+                                enabled = !snapshot.hasSecretError,
+                            )
+                        }
                     }
                 }
                 item {
                     ScreenSectionCard(
                         title = stringResource(R.string.token_detail_modern_session_title),
                         description = stringResource(R.string.token_detail_modern_session_body),
-                        onClick = onOpenSteamSession,
                     ) {
                         VaultSecondaryButton(
                             text = stringResource(R.string.token_detail_modern_session_open),
@@ -212,7 +222,6 @@ fun TokenDetailScreen(
                     ScreenSectionCard(
                         title = stringResource(R.string.token_detail_modern_confirmations_title),
                         description = stringResource(R.string.token_detail_modern_confirmations_body),
-                        onClick = onOpenSteamConfirmations,
                     ) {
                         VaultSecondaryButton(
                             text = stringResource(R.string.token_detail_modern_confirmations_open),
@@ -239,9 +248,7 @@ fun TokenDetailScreen(
                 }
                 item {
                     AnimatedVisibility(visible = advancedInfoVisible) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                        ) {
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                             ScreenSectionCard(
                                 title = stringResource(R.string.token_detail_metadata_title),
                                 description = stringResource(R.string.token_detail_metadata_description),
@@ -310,9 +317,7 @@ private fun DetailLine(
     label: String,
     value: String,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,

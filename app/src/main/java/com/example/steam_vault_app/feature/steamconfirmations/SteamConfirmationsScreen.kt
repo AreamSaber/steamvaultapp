@@ -162,8 +162,12 @@ fun SteamConfirmationsScreen(
 
                 item {
                     ScreenSectionCard(
-                        title = stringResource(R.string.steam_confirmation_loading),
-                        description = stringResource(R.string.steam_confirmation_empty_description),
+                        title = stringResource(R.string.steam_confirmation_modern_status_title),
+                        description = if (hasSession && hasSyncedTime) {
+                            stringResource(R.string.steam_confirmation_modern_status_ready)
+                        } else {
+                            stringResource(R.string.steam_confirmation_modern_status_action_required)
+                        },
                     ) {
                         VaultKeyValueRow(
                             label = stringResource(R.string.steam_session_open_confirmations_action),
@@ -180,6 +184,17 @@ fun SteamConfirmationsScreen(
                             } else {
                                 stringResource(R.string.steam_session_time_not_synced)
                             },
+                        )
+                    }
+                }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.vault_security_note_title),
+                        description = stringResource(R.string.vault_security_note_body),
+                    ) {
+                        VaultInlineBanner(
+                            text = stringResource(R.string.steam_confirmation_empty_description),
+                            tone = VaultBannerTone.Neutral,
                         )
                     }
                 }

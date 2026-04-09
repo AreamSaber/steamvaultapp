@@ -8,17 +8,13 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,15 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material3.Icon
 import com.example.steam_vault_app.R
 import com.example.steam_vault_app.domain.model.TokenRecord
 import com.example.steam_vault_app.domain.repository.VaultRepository
@@ -116,7 +106,7 @@ fun TokenListScreen(
                         )
                         VaultSecondaryButton(
                             text = stringResource(R.string.token_list_modern_empty_secondary),
-                            onClick = onOpenSteamQrLogin,
+                            onClick = onAddAccount,
                         )
                     }
                 }
@@ -142,6 +132,7 @@ fun TokenListScreen(
                 }
             }
         }
+
         item {
             ScreenSectionCard(
                 title = stringResource(R.string.token_list_modern_trust_title),
@@ -172,7 +163,6 @@ private fun VaultTokenCard(
     onOpenTokenDetails: (String) -> Unit,
 ) {
     val clipboardManager = LocalClipboardManager.current
-    val copyActionText = stringResource(R.string.token_list_modern_copy)
     val snapshot = buildSteamCodeSnapshot(
         token = token,
         currentEpochSeconds = currentEpochSeconds,
@@ -180,33 +170,33 @@ private fun VaultTokenCard(
         errorCodeDisplay = stringResource(R.string.token_code_error_display),
     )
 
-    val isWarning = snapshot.secondsRemaining <= 5
-    val primaryColor = if (isWarning) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary
+    val highlightColor = if (snapshot.secondsRemaining <= 5) {
+        MaterialTheme.colorScheme.tertiary
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
 
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpenTokenDetails(token.id) },
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // Top Row
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top,
             ) {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         text = stringResource(R.string.token_list_modern_account_label),
                         style = MaterialTheme.typography.labelSmall,
-                        color = primaryColor,
-                        modifier = Modifier.padding(bottom = 4.dp)
+                        color = highlightColor,
                     )
                     Text(
                         text = token.accountName,
@@ -214,85 +204,67 @@ private fun VaultTokenCard(
                         color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
-                
-                // Progress Circle
                 Box(
+                    modifier = Modifier.size(42.dp),
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.size(40.dp)
                 ) {
                     CircularProgressIndicator(
                         progress = { snapshot.progress },
                         modifier = Modifier.fillMaxSize(),
                         strokeWidth = 3.dp,
-                        color = primaryColor,
+                        color = highlightColor,
                         trackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     )
                     Text(
-                        text = "${snapshot.secondsRemaining}s",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = primaryColor,
+                        text = stringResource(R.string.token_list_modern_seconds_left, snapshot.secondsRemaining),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = highlightColor,
                     )
                 }
             }
-            
-            // Bottom Row
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    ),
+                Surface(
+                    modifier = Modifier.weight(1f),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
                 ) {
                     Box(
-                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+                        contentAlignment = Alignment.CenterStart,
                     ) {
                         Text(
                             text = snapshot.codeDisplay,
-                            style = MaterialTheme.typography.displayMedium,
+                            style = MaterialTheme.typography.displaySmall,
                             fontFamily = FontFamily.Monospace,
-                            color = if (isWarning) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-                
-                Card(
-                    modifier = Modifier.clickable(enabled = !snapshot.hasSecretError) {
-                        clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ),
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.List,
-                            contentDescription = copyActionText,
-                            modifier = Modifier.size(20.dp),
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = copyActionText,
-                            style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    modifier = Modifier.clickable(enabled = !snapshot.hasSecretError) {
+                        clipboardManager.setText(AnnotatedString(snapshot.codeDisplay))
+                    },
+                ) {
+                    Text(
+                        text = stringResource(R.string.token_list_modern_copy),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 18.dp, vertical = 18.dp),
+                    )
+                }
             }
-            
+
             if (snapshot.hasSecretError) {
                 VaultInlineBanner(
                     text = stringResource(R.string.token_card_secret_error),
                     tone = VaultBannerTone.Error,
-                    modifier = Modifier.padding(top = 16.dp)
                 )
             }
         }

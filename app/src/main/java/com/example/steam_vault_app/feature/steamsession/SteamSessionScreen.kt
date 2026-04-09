@@ -376,6 +376,13 @@ fun SteamSessionScreen(
                         },
                     ),
                 )
+                val hasSyncedTime = steamTimeSyncState.lastSyncAt != null
+                val sessionReadyForActions = session != null && hasSyncedTime
+                val sessionStatusDescription = if (sessionReadyForActions) {
+                    context.getString(R.string.steam_session_modern_status_ready)
+                } else {
+                    context.getString(R.string.steam_session_modern_status_attention)
+                }
 
                 item {
                     VaultPageHeader(
@@ -441,6 +448,113 @@ fun SteamSessionScreen(
                             tone = VaultBannerTone.Error,
                         )
                     }
+                }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.steam_session_modern_status_title),
+                        description = sessionStatusDescription,
+                    ) {
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_session_current_title),
+                            value = if (session != null) {
+                                stringResource(R.string.steam_session_modern_status_saved)
+                            } else {
+                                stringResource(R.string.steam_session_modern_status_missing)
+                            },
+                        )
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_session_sync_time_action),
+                            value = if (hasSyncedTime) {
+                                stringResource(
+                                    R.string.steam_session_time_synced,
+                                    formatOffset(context, steamTimeSyncState.offsetSeconds),
+                                )
+                            } else {
+                                stringResource(R.string.steam_session_time_not_synced)
+                            },
+                        )
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_session_detail_validation_status),
+                            value = if (session != null) {
+                                formatSessionValidationStatus(context, session.validationStatus)
+                            } else {
+                                stringResource(R.string.steam_session_modern_status_attention)
+                            },
+                        )
+                    }
+                }
+                item {
+                    VaultPrimaryButton(
+                        text = stringResource(
+                            if (session != null) {
+                                if (isValidatingSession) {
+                                    R.string.steam_session_validation_running
+                                } else {
+                                    R.string.steam_session_validation_action
+                                }
+                            } else {
+                                R.string.steam_session_sync_time_action
+                            },
+                        ),
+                        onClick = {
+                            if (session == null) {
+                                onSyncSteamTime()
+                            } else {
+                                scope.launch {
+                                    validationMessage = null
+                                    validationError = null
+                                    isValidatingSession = true
+                                    try {
+                                        val validatedSession = steamSessionValidationSyncManager
+                                            .validateSession(tokenId)
+                                        validationMessage = context.getString(
+                                            R.string.steam_session_validation_success,
+                                            validatedSession.steamId
+                                                ?: context.getString(R.string.common_not_saved),
+                                        )
+                                        localRefreshVersion += 1
+                                    } catch (error: Exception) {
+                                        validationError = error.message
+                                            ?: context.getString(R.string.steam_session_validation_failed)
+                                        localRefreshVersion += 1
+                                    } finally {
+                                        isValidatingSession = false
+                                    }
+                                }
+                            } 
+                        },
+                        enabled = if (session != null) !isValidatingSession else true,
+                    )
+                }
+                if (session != null) {
+                    item {
+                        VaultSecondaryButton(
+                            text = stringResource(R.string.steam_session_clear_action),
+                            onClick = {
+                                scope.launch {
+                                    clearMessage = null
+                                    clearError = null
+                                    validationMessage = null
+                                    validationError = null
+                                    try {
+                                        steamSessionRepository.clearSession(tokenId)
+                                        clearMessage = context.getString(R.string.steam_session_clear_success)
+                                        localRefreshVersion += 1
+                                    } catch (error: Exception) {
+                                        clearError = error.message
+                                            ?: context.getString(R.string.steam_session_clear_failed)
+                                    }
+                                }
+                            },
+                        )
+                    }
+                }
+                item {
+                    VaultSecondaryButton(
+                        text = stringResource(R.string.steam_session_open_confirmations_action),
+                        onClick = onOpenConfirmations,
+                        enabled = sessionReadyForActions,
+                    )
                 }
                 if (entryContext?.kind == SteamSessionEntryContext.Kind.IMPORTED_EXISTING_AUTHENTICATOR) {
                     item {
@@ -576,64 +690,6 @@ fun SteamSessionScreen(
                                 )
                             }
                         }
-                        VaultPrimaryButton(
-                            text = stringResource(
-                                if (isValidatingSession) {
-                                    R.string.steam_session_validation_running
-                                } else {
-                                    R.string.steam_session_validation_action
-                                },
-                            ),
-                            onClick = {
-                                scope.launch {
-                                    validationMessage = null
-                                    validationError = null
-                                    isValidatingSession = true
-                                    try {
-                                        val validatedSession = steamSessionValidationSyncManager
-                                            .validateSession(tokenId)
-                                        validationMessage = context.getString(
-                                            R.string.steam_session_validation_success,
-                                            validatedSession.steamId
-                                                ?: context.getString(R.string.common_not_saved),
-                                        )
-                                        localRefreshVersion += 1
-                                    } catch (error: Exception) {
-                                        validationError = error.message
-                                            ?: context.getString(R.string.steam_session_validation_failed)
-                                        localRefreshVersion += 1
-                                    } finally {
-                                        isValidatingSession = false
-                                    }
-                                }
-                            },
-                            enabled = session != null && !isValidatingSession,
-                        )
-                        VaultSecondaryButton(
-                            text = stringResource(R.string.steam_session_clear_action),
-                            onClick = {
-                                scope.launch {
-                                    clearMessage = null
-                                    clearError = null
-                                    validationMessage = null
-                                    validationError = null
-                                    try {
-                                        steamSessionRepository.clearSession(tokenId)
-                                        clearMessage = context.getString(R.string.steam_session_clear_success)
-                                        localRefreshVersion += 1
-                                    } catch (error: Exception) {
-                                        clearError = error.message
-                                            ?: context.getString(R.string.steam_session_clear_failed)
-                                    }
-                                }
-                            },
-                            enabled = session != null,
-                        )
-                        VaultSecondaryButton(
-                            text = stringResource(R.string.steam_session_open_confirmations_action),
-                            onClick = onOpenConfirmations,
-                            enabled = session != null,
-                        )
                     }
                 }
                 item {

@@ -6,12 +6,6 @@
     <string name="label_confirm_new_password">确认新主密码</string>
     <string name="label_confirm_password">确认密码</string>
     <string name="label_new_master_password">新主密码</string>
-    <string name="steam_session_detail_created_at">创建时间</string>
-    <string name="steam_session_detail_updated_at">更新时间</string>
-    <string name="steam_session_last_validated_none">尚未验证</string>
-    <string name="steam_session_validation_status_error">验证失败</string>
-    <string name="steam_session_validation_status_success">验证成功</string>
-    <string name="steam_session_validation_status_unknown">尚未验证</string>
     <string name="steam_session_web_login_current_stage">当前浏览器阶段：%1$s</string>
     <string name="steam_session_web_login_journey_state_manual_required">需手动完成</string>
     <string name="steam_session_web_login_journey_state_pending_result">等待结果</string>

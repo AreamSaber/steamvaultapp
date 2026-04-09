@@ -5,10 +5,20 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -95,7 +106,7 @@ fun BackupExportScreen(
         item {
             VaultPageHeader(
                 eyebrow = stringResource(R.string.vault_brand_label),
-                title = stringResource(R.string.backup_export_title),
+                title = stringResource(R.string.backup_export_modern_title),
                 subtitle = stringResource(R.string.backup_export_modern_body),
             )
         }
@@ -116,44 +127,108 @@ fun BackupExportScreen(
             }
         }
         item {
-            ScreenSectionCard(
-                title = stringResource(R.string.backup_export_modern_card_title),
-                description = stringResource(R.string.backup_export_modern_card_body),
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
             ) {
-                Text(
-                    text = stringResource(R.string.backup_export_modern_caution),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                VaultPrimaryButton(
-                    text = stringResource(
-                        if (isWorking) {
-                            R.string.backup_export_modern_action_loading
-                        } else {
-                            R.string.backup_export_modern_action
-                        },
-                    ),
-                    onClick = {
-                        scope.launch {
-                            isWorking = true
-                            statusMessage = null
-                            errorMessage = null
-                            try {
-                                val backupPackage = vaultRepository.exportLocalBackup()
-                                val payload = LocalBackupPayloadCodec.encode(backupPackage)
-                                val suggestedFileName = buildBackupFileName(backupPackage.exportedAt)
-                                pendingPayload = payload
-                                pendingFileName = suggestedFileName
-                                createDocumentLauncher.launch(suggestedFileName)
-                            } catch (_: Exception) {
-                                errorMessage = context.getString(R.string.backup_export_generate_failed)
-                                isWorking = false
+                Column(
+                    modifier = Modifier.padding(20.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(28.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(vertical = 24.dp, horizontal = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(14.dp),
+                        ) {
+                            Surface(
+                                modifier = Modifier.size(92.dp),
+                                shape = RoundedCornerShape(28.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ) {
+                                androidx.compose.foundation.layout.Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Default.Lock,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(42.dp),
+                                    )
+                                }
                             }
+                            Text(
+                                text = stringResource(R.string.backup_export_protocol_label),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                         }
-                    },
-                    enabled = !isWorking,
-                )
+                    }
+                    ScreenSectionCard(
+                        title = stringResource(R.string.backup_export_warning_title),
+                        description = stringResource(R.string.backup_export_modern_caution),
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.tertiary,
+                            )
+                            Text(
+                                text = stringResource(R.string.vault_status_local_only),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                    ScreenSectionCard(
+                        title = stringResource(R.string.backup_export_modern_card_title),
+                        description = stringResource(R.string.backup_export_modern_card_body),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.backup_export_algorithm_label),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
             }
+        }
+        item {
+            VaultPrimaryButton(
+                text = stringResource(
+                    if (isWorking) {
+                        R.string.backup_export_modern_action_loading
+                    } else {
+                        R.string.backup_export_modern_action
+                    },
+                ),
+                onClick = {
+                    scope.launch {
+                        isWorking = true
+                        statusMessage = null
+                        errorMessage = null
+                        try {
+                            val backupPackage = vaultRepository.exportLocalBackup()
+                            val payload = LocalBackupPayloadCodec.encode(backupPackage)
+                            val suggestedFileName = buildBackupFileName(backupPackage.exportedAt)
+                            pendingPayload = payload
+                            pendingFileName = suggestedFileName
+                            createDocumentLauncher.launch(suggestedFileName)
+                        } catch (_: Exception) {
+                            errorMessage = context.getString(R.string.backup_export_generate_failed)
+                            isWorking = false
+                        }
+                    }
+                },
+                enabled = !isWorking,
+            )
         }
     }
 }

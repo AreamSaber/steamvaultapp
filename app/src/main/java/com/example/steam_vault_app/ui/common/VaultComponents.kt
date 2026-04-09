@@ -1,6 +1,7 @@
 package com.example.steam_vault_app.ui.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,36 +12,39 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.steam_vault_app.R
 
 enum class VaultBannerTone {
-    Neutral, Success, Warning, Error
+    Neutral,
+    Success,
+    Warning,
+    Error,
 }
 
 enum class VaultStepState {
-    Pending, Active, Complete
+    Pending,
+    Active,
+    Complete,
 }
 
 data class VaultStepItem(
@@ -59,29 +63,48 @@ fun VaultPageHeader(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = eyebrow,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(9.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                    )
+                    Text(
+                        text = eyebrow,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
             trailingContent?.invoke(this)
         }
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(end = 24.dp),
         )
         Text(
             text = subtitle,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(end = 36.dp),
         )
     }
 }
@@ -98,17 +121,15 @@ fun VaultInfoPill(
         contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
                 modifier = Modifier
                     .size(8.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = CircleShape,
-                    ),
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primary),
             )
             Text(
                 text = text,
@@ -125,11 +146,11 @@ fun VaultProgressSteps(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 22.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             steps.forEachIndexed { index, step ->
@@ -143,14 +164,14 @@ fun VaultProgressSteps(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         val containerColor = when (step.state) {
-                            VaultStepState.Pending -> MaterialTheme.colorScheme.surfaceContainerHigh
-                            VaultStepState.Active -> MaterialTheme.colorScheme.primary
-                            VaultStepState.Complete -> MaterialTheme.colorScheme.secondary
+                            VaultStepState.Pending -> MaterialTheme.colorScheme.surfaceContainerHighest
+                            VaultStepState.Active -> MaterialTheme.colorScheme.primaryContainer
+                            VaultStepState.Complete -> MaterialTheme.colorScheme.primary
                         }
                         val contentColor = when (step.state) {
                             VaultStepState.Pending -> MaterialTheme.colorScheme.onSurfaceVariant
-                            VaultStepState.Active -> MaterialTheme.colorScheme.onPrimary
-                            VaultStepState.Complete -> MaterialTheme.colorScheme.onSecondary
+                            VaultStepState.Active -> MaterialTheme.colorScheme.onPrimaryContainer
+                            VaultStepState.Complete -> MaterialTheme.colorScheme.onPrimary
                         }
                         Surface(
                             shape = CircleShape,
@@ -158,7 +179,7 @@ fun VaultProgressSteps(
                             contentColor = contentColor,
                         ) {
                             Box(
-                                modifier = Modifier.size(28.dp),
+                                modifier = Modifier.size(30.dp),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
@@ -170,12 +191,12 @@ fun VaultProgressSteps(
                         if (index != steps.lastIndex) {
                             Box(
                                 modifier = Modifier
-                                    .size(width = 2.dp, height = 24.dp)
+                                    .size(width = 2.dp, height = 28.dp)
                                     .background(
                                         color = if (step.state == VaultStepState.Pending) {
-                                            MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+                                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
                                         } else {
-                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
                                         },
                                         shape = CircleShape,
                                     ),
@@ -183,7 +204,7 @@ fun VaultProgressSteps(
                         }
                     }
                     Column(
-                        modifier = Modifier.weight(1f).padding(top = 2.dp),
+                        modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                         Text(
@@ -211,39 +232,56 @@ fun VaultPrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    leadingIcon: ImageVector? = null,
+    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     contentDescription: String? = null,
 ) {
-    Button(
-        onClick = onClick,
+    val alpha = if (enabled) 1f else 0.45f
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = 58.dp)
+            .alpha(alpha)
+            .clip(CircleShape)
+            .background(
+                brush = Brush.horizontalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.colorScheme.primary,
+                    ),
+                ),
+            )
             .then(
                 if (contentDescription != null) {
                     Modifier.semantics { this.contentDescription = contentDescription }
                 } else {
                     Modifier
                 },
-            ),
-        enabled = enabled,
-        shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        ),
+            )
+            .clickable(
+                enabled = enabled,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = 22.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        if (leadingIcon != null) {
-            Icon(
-                imageVector = leadingIcon,
-                contentDescription = null,
-                modifier = Modifier.padding(end = 8.dp),
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            leadingIcon?.let { icon ->
+                androidx.compose.material3.Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+            Text(
+                text = text,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
             )
         }
-        Text(
-            text = text,
-            style = MaterialTheme.typography.labelLarge,
-        )
     }
 }
 
@@ -254,21 +292,25 @@ fun VaultSecondaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
-    Button(
-        onClick = onClick,
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp),
-        enabled = enabled,
-        shape = CircleShape,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            contentColor = MaterialTheme.colorScheme.onSurface,
-        ),
+            .heightIn(min = 56.dp)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable(
+                enabled = enabled,
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .padding(horizontal = 22.dp, vertical = 16.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -284,26 +326,26 @@ fun VaultInlineBanner(
             MaterialTheme.colorScheme.surfaceContainerHigh to MaterialTheme.colorScheme.onSurface
         }
         VaultBannerTone.Success -> {
-            MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f) to MaterialTheme.colorScheme.onSurface
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.16f) to MaterialTheme.colorScheme.onSurface
         }
         VaultBannerTone.Warning -> {
-            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f) to MaterialTheme.colorScheme.tertiary
+            MaterialTheme.colorScheme.tertiary.copy(alpha = 0.16f) to MaterialTheme.colorScheme.onSurface
         }
         VaultBannerTone.Error -> {
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f) to MaterialTheme.colorScheme.error
+            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.75f) to MaterialTheme.colorScheme.onErrorContainer
         }
     }
 
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = MaterialTheme.shapes.medium,
         color = containerColor,
         contentColor = contentColor,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
         )
     }
 }
@@ -334,9 +376,9 @@ fun VaultTextField(
         keyboardOptions = keyboardOptions,
         visualTransformation = visualTransformation,
         label = { Text(text = label) },
-        placeholder = placeholder?.let { { Text(text = it) } },
-        supportingText = supportingText?.let { { Text(text = it) } },
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+        placeholder = placeholder?.let { content -> { Text(text = content) } },
+        supportingText = supportingText?.let { content -> { Text(text = content) } },
+        shape = MaterialTheme.shapes.medium,
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -362,11 +404,11 @@ fun VaultSensitiveValueRow(
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Row(
@@ -387,9 +429,8 @@ fun VaultSensitiveValueRow(
                         },
                     ) {
                         Text(
-                            text = copyDescription,
+                            text = androidx.compose.ui.res.stringResource(R.string.token_list_modern_copy),
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
@@ -411,7 +452,7 @@ fun VaultKeyValueRow(
     modifier: Modifier = Modifier,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.Top,
     ) {
@@ -425,7 +466,7 @@ fun VaultKeyValueRow(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1.5f),
+            modifier = Modifier.weight(1.2f),
         )
     }
 }

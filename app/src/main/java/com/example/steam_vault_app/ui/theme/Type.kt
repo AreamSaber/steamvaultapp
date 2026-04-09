@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.sp
 
 private val DisplayFamily = FontFamily.SansSerif
 private val BodyFamily = FontFamily.SansSerif
+private val MonoFamily = FontFamily.Monospace
 
 val Typography = Typography(
     displayMedium = TextStyle(
@@ -27,16 +28,16 @@ val Typography = Typography(
     headlineLarge = TextStyle(
         fontFamily = DisplayFamily,
         fontWeight = FontWeight.ExtraBold,
-        fontSize = 32.sp,
-        lineHeight = 38.sp,
-        letterSpacing = (-0.6).sp,
+        fontSize = 34.sp,
+        lineHeight = 40.sp,
+        letterSpacing = (-0.8).sp,
     ),
     headlineMedium = TextStyle(
         fontFamily = DisplayFamily,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp,
         lineHeight = 34.sp,
-        letterSpacing = (-0.4).sp,
+        letterSpacing = (-0.6).sp,
     ),
     headlineSmall = TextStyle(
         fontFamily = DisplayFamily,
@@ -47,16 +48,17 @@ val Typography = Typography(
     ),
     titleLarge = TextStyle(
         fontFamily = DisplayFamily,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold,
         fontSize = 22.sp,
         lineHeight = 28.sp,
         letterSpacing = (-0.2).sp,
     ),
     titleMedium = TextStyle(
-        fontFamily = BodyFamily,
+        fontFamily = DisplayFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp,
+        letterSpacing = (-0.2).sp,
     ),
     bodyLarge = TextStyle(
         fontFamily = BodyFamily,
@@ -90,4 +92,12 @@ val Typography = Typography(
         lineHeight = 14.sp,
         letterSpacing = 0.9.sp,
     ),
+)
+
+val VaultMonoTextStyle = TextStyle(
+    fontFamily = MonoFamily,
+    fontWeight = FontWeight.Bold,
+    fontSize = 18.sp,
+    lineHeight = 22.sp,
+    letterSpacing = 0.2.sp,
 )

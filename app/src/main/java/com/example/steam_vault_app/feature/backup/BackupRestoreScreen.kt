@@ -5,8 +5,10 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import com.example.steam_vault_app.ui.common.VaultBannerTone
 import com.example.steam_vault_app.ui.common.VaultInlineBanner
 import com.example.steam_vault_app.ui.common.VaultPageHeader
 import com.example.steam_vault_app.ui.common.VaultPrimaryButton
+import com.example.steam_vault_app.ui.common.VaultSecondaryButton
 import java.nio.charset.StandardCharsets
 import kotlinx.coroutines.launch
 
@@ -81,7 +84,7 @@ fun BackupRestoreScreen(
         item {
             VaultPageHeader(
                 eyebrow = stringResource(R.string.vault_brand_label),
-                title = stringResource(R.string.backup_restore_title),
+                title = stringResource(R.string.backup_restore_modern_title),
                 subtitle = stringResource(R.string.backup_restore_modern_body),
             )
         }
@@ -103,22 +106,23 @@ fun BackupRestoreScreen(
         }
         item {
             ScreenSectionCard(
-                title = stringResource(R.string.backup_restore_modern_card_title),
-                description = stringResource(R.string.backup_restore_modern_card_body),
+                title = stringResource(R.string.backup_restore_warning_title),
+                description = stringResource(R.string.backup_restore_modern_caution),
             ) {
                 Text(
-                    text = stringResource(R.string.backup_restore_modern_caution),
-                    style = MaterialTheme.typography.bodySmall,
+                    text = stringResource(R.string.backup_restore_modern_card_body),
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                VaultPrimaryButton(
-                    text = stringResource(
-                        if (isWorking) {
-                            R.string.backup_restore_modern_action_loading
-                        } else {
-                            R.string.backup_restore_modern_action
-                        },
-                    ),
+            }
+        }
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.backup_restore_modern_card_title),
+                description = stringResource(R.string.backup_restore_source_local),
+            ) {
+                VaultSecondaryButton(
+                    text = stringResource(R.string.backup_restore_browse_local),
                     onClick = {
                         isWorking = true
                         statusMessage = null
@@ -128,6 +132,24 @@ fun BackupRestoreScreen(
                     enabled = !isWorking,
                 )
             }
+        }
+        item {
+            VaultPrimaryButton(
+                text = stringResource(
+                    if (isWorking) {
+                        R.string.backup_restore_modern_action_loading
+                    } else {
+                        R.string.backup_restore_modern_action
+                    },
+                ),
+                onClick = {
+                    isWorking = true
+                    statusMessage = null
+                    errorMessage = null
+                    openDocumentLauncher.launch(arrayOf("application/json", "text/plain"))
+                },
+                enabled = !isWorking,
+            )
         }
     }
 }

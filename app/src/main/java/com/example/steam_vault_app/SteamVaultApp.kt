@@ -1,18 +1,28 @@
 package com.example.steam_vault_app
 
 import android.os.SystemClock
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,12 +35,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -50,6 +61,7 @@ import com.example.steam_vault_app.platform.security.AndroidBiometricPromptContr
 import com.example.steam_vault_app.platform.security.BiometricAuthException
 import com.example.steam_vault_app.platform.security.BiometricAvailability
 import com.example.steam_vault_app.platform.security.WindowSecurityController
+import com.example.steam_vault_app.ui.common.VaultInfoPill
 import com.example.steam_vault_app.ui.theme.SteamVaultTheme
 import androidx.fragment.app.FragmentActivity
 import kotlinx.coroutines.launch
@@ -335,47 +347,28 @@ fun SteamVaultApp(
             modifier = modifier.fillMaxSize(),
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                SteamVaultTopBar(
-                    currentRoute = currentRoute,
-                    canNavigateBack = navController.previousBackStackEntry != null &&
-                        currentRoute !in AppRoute.bottomNavigationRoutes,
-                    onNavigateBack = { navController.popBackStack() },
-                )
+                if (currentRoute != AppRoute.Welcome) {
+                    SteamVaultTopBar(
+                        canNavigateBack = navController.previousBackStackEntry != null &&
+                            currentRoute !in AppRoute.bottomNavigationRoutes,
+                        onNavigateBack = { navController.popBackStack() },
+                    )
+                }
             },
             bottomBar = {
                 if (currentRoute in AppRoute.bottomNavigationRoutes) {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                    ) {
-                        AppRoute.bottomNavigationRoutes.forEach { route ->
-                            NavigationBarItem(
-                                selected = navBackStackEntry?.destination?.hierarchy?.any {
-                                    it.route == route.route
-                                } == true,
-                                onClick = {
-                                    navController.navigate(route.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
-                                        }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                icon = {
-                                    Text(
-                                        text = stringResource(route.shortLabelResId),
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = stringResource(route.titleResId),
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                },
-                            )
-                        }
-                    }
+                    SteamVaultBottomBar(
+                        currentRoute = currentRoute,
+                        onNavigate = { route ->
+                            navController.navigate(route.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                    )
                 }
             },
         ) { innerPadding ->
@@ -697,33 +690,171 @@ private fun LoadingAppShell(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SteamVaultTopBar(
-    currentRoute: AppRoute,
     canNavigateBack: Boolean,
     onNavigateBack: () -> Unit,
 ) {
-    TopAppBar(
-        title = {
-            Text(
-                text = stringResource(currentRoute.titleResId),
-                style = MaterialTheme.typography.titleLarge,
-            )
-        },
-        navigationIcon = {
-            if (canNavigateBack) {
-                IconButton(onClick = onNavigateBack) {
+    Surface(
+        color = MaterialTheme.colorScheme.background.copy(alpha = 0.92f),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 18.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = if (canNavigateBack) {
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    } else {
+                        MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
+                    },
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(
+                                enabled = canNavigateBack,
+                                onClick = onNavigateBack,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = if (canNavigateBack) {
+                                Icons.AutoMirrored.Filled.ArrowBack
+                            } else {
+                                Icons.Default.Lock
+                            },
+                            contentDescription = if (canNavigateBack) {
+                                stringResource(R.string.vault_shell_back)
+                            } else {
+                                null
+                            },
+                            tint = if (canNavigateBack) {
+                                MaterialTheme.colorScheme.onSurface
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            },
+                        )
+                    }
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = "<",
+                        text = stringResource(R.string.vault_brand_label),
                         style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = stringResource(R.string.vault_status_local_only),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-        ),
-    )
+            VaultInfoPill(
+                text = stringResource(R.string.vault_status_backup_ready),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SteamVaultBottomBar(
+    currentRoute: AppRoute,
+    onNavigate: (AppRoute) -> Unit,
+) {
+    Surface(
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = 0.94f),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            BottomBarItem(
+                route = AppRoute.Tokens,
+                currentRoute = currentRoute,
+                label = stringResource(R.string.vault_shell_nav_tokens),
+                icon = Icons.Default.Lock,
+                onNavigate = onNavigate,
+            )
+            BottomBarItem(
+                route = AppRoute.Import,
+                currentRoute = currentRoute,
+                label = stringResource(R.string.vault_shell_nav_add),
+                icon = Icons.Default.Add,
+                onNavigate = onNavigate,
+            )
+            BottomBarItem(
+                route = AppRoute.Settings,
+                currentRoute = currentRoute,
+                label = stringResource(R.string.vault_shell_nav_settings),
+                icon = Icons.Default.Settings,
+                onNavigate = onNavigate,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RowScope.BottomBarItem(
+    route: AppRoute,
+    currentRoute: AppRoute,
+    label: String,
+    icon: ImageVector,
+    onNavigate: (AppRoute) -> Unit,
+) {
+    val selected = currentRoute == route
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .clickable { onNavigate(route) }
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Surface(
+            shape = CircleShape,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHigh
+            },
+        ) {
+            Box(
+                modifier = Modifier.size(44.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (selected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                )
+            }
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        )
+    }
 }

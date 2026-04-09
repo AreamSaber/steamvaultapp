@@ -1,27 +1,20 @@
 package com.example.steam_vault_app.feature.settings
 
-import androidx.compose.foundation.background
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -32,16 +25,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.steam_vault_app.R
 import com.example.steam_vault_app.domain.model.AppSecuritySettings
-import com.example.steam_vault_app.domain.model.AutoLockTimeoutOption
 import com.example.steam_vault_app.domain.model.SteamTimeSyncState
 import com.example.steam_vault_app.domain.model.SteamTimeSyncStatus
 import com.example.steam_vault_app.ui.common.VaultBannerTone
@@ -72,8 +60,8 @@ fun SettingsScreen(
 
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
     ) {
         item {
             VaultPageHeader(
@@ -93,7 +81,10 @@ fun SettingsScreen(
         }
         securityStatusMessage?.let { message ->
             item {
-                VaultInlineBanner(text = message, tone = VaultBannerTone.Success)
+                VaultInlineBanner(
+                    text = message,
+                    tone = VaultBannerTone.Success,
+                )
             }
         }
 
@@ -102,77 +93,71 @@ fun SettingsScreen(
                 SettingsActionRow(
                     icon = Icons.Default.Lock,
                     label = stringResource(R.string.settings_modern_change_password),
-                    onClick = onOpenChangePassword
+                    onClick = onOpenChangePassword,
                 )
                 SettingsActionRow(
                     icon = Icons.Default.Lock,
                     label = stringResource(R.string.settings_modern_lock_now),
                     onClick = onLockVault,
-                    showArrow = false
-                )
-                SettingsSwitchRow(
-                    icon = Icons.Default.Person,
-                    label = stringResource(R.string.settings_modern_biometric),
-                    checked = securitySettings.biometricQuickUnlockEnabled,
-                    onCheckedChange = onBiometricQuickUnlockToggle,
-                    enabled = biometricQuickUnlockAvailable || securitySettings.biometricQuickUnlockEnabled
+                    showArrow = false,
                 )
                 SettingsSwitchRow(
                     icon = Icons.Default.Lock,
+                    label = stringResource(R.string.settings_modern_biometric),
+                    checked = securitySettings.biometricQuickUnlockEnabled,
+                    onCheckedChange = onBiometricQuickUnlockToggle,
+                    enabled = biometricQuickUnlockAvailable || securitySettings.biometricQuickUnlockEnabled,
+                )
+                SettingsSwitchRow(
+                    icon = Icons.Default.Settings,
                     label = stringResource(R.string.settings_modern_secure_screen),
                     checked = securitySettings.secureScreensEnabled,
                     onCheckedChange = { enabled ->
                         onSecuritySettingsChanged(securitySettings.copy(secureScreensEnabled = enabled))
-                    }
+                    },
                 )
             }
         }
 
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_time_title)) {
-                Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column {
-                            Text(
-                                text = "当前偏移量",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = formatOffsetSeconds(context, steamTimeSyncState.offsetSeconds),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text(
-                                text = "上次同步",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = steamTimeSyncState.lastSyncAt ?: stringResource(R.string.settings_steam_time_last_sync_none),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
-                    
-                    steamTimeStatusText(state = steamTimeSyncState, isSyncing = isSyncingSteamTime)?.let { statusText ->
+                Column(
+                    modifier = Modifier.padding(22.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    SettingsMetaLine(
+                        label = stringResource(R.string.settings_modern_sync_offset_label),
+                        value = formatOffsetSeconds(context, steamTimeSyncState.offsetSeconds),
+                    )
+                    SettingsMetaLine(
+                        label = stringResource(R.string.settings_modern_sync_last_label),
+                        value = steamTimeSyncState.lastSyncAt
+                            ?: stringResource(R.string.settings_steam_time_last_sync_none),
+                    )
+                    steamTimeStatusText(
+                        state = steamTimeSyncState,
+                        isSyncing = isSyncingSteamTime,
+                    )?.let { statusText ->
                         VaultInlineBanner(
                             text = statusText,
-                            tone = if (steamTimeSyncState.status == SteamTimeSyncStatus.ERROR) VaultBannerTone.Error else VaultBannerTone.Neutral,
+                            tone = if (steamTimeSyncState.status == SteamTimeSyncStatus.ERROR) {
+                                VaultBannerTone.Error
+                            } else {
+                                VaultBannerTone.Neutral
+                            },
                         )
                     }
-                    
                     VaultPrimaryButton(
-                        text = stringResource(if (isSyncingSteamTime) R.string.settings_steam_time_action_loading else R.string.settings_modern_sync_now),
+                        text = stringResource(
+                            if (isSyncingSteamTime) {
+                                R.string.settings_steam_time_action_loading
+                            } else {
+                                R.string.settings_modern_sync_now
+                            },
+                        ),
                         onClick = onSyncSteamTime,
                         enabled = !isSyncingSteamTime,
-                        leadingIcon = Icons.Default.Refresh
+                        leadingIcon = Icons.Default.Settings,
                     )
                 }
             }
@@ -181,14 +166,14 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_backup_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.KeyboardArrowDown,
+                    icon = Icons.Default.Lock,
                     label = stringResource(R.string.settings_modern_export),
-                    onClick = onOpenBackupExport
+                    onClick = onOpenBackupExport,
                 )
                 SettingsActionRow(
-                    icon = Icons.Default.Refresh,
+                    icon = Icons.Default.Settings,
                     label = stringResource(R.string.settings_modern_restore),
-                    onClick = onOpenBackupRestore
+                    onClick = onOpenBackupRestore,
                 )
             }
         }
@@ -196,20 +181,16 @@ fun SettingsScreen(
         item {
             SettingsSection(title = stringResource(R.string.settings_modern_cloud_title)) {
                 SettingsActionRow(
-                    icon = Icons.Default.Info,
+                    icon = Icons.Default.Settings,
                     label = stringResource(R.string.settings_modern_cloud_status),
-                    onClick = onOpenCloudBackupStatus
+                    onClick = onOpenCloudBackupStatus,
                 )
                 SettingsActionRow(
                     icon = Icons.Default.Settings,
                     label = stringResource(R.string.settings_modern_cloud_config),
-                    onClick = onOpenCloudBackupConfig
+                    onClick = onOpenCloudBackupConfig,
                 )
             }
-        }
-        
-        item {
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -217,20 +198,19 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSection(
     title: String,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
             text = title,
-            style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
-            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 4.dp),
         )
         Surface(
-            shape = RoundedCornerShape(24.dp),
+            shape = RoundedCornerShape(28.dp),
             color = MaterialTheme.colorScheme.surfaceContainerLow,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column {
                 content()
@@ -241,41 +221,39 @@ private fun SettingsSection(
 
 @Composable
 private fun SettingsActionRow(
-    icon: ImageVector,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     onClick: () -> Unit,
-    showArrow: Boolean = true
+    showArrow: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 24.dp, vertical = 20.dp),
+            .clickable(onClick = onClick)
+            .padding(horizontal = 22.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         if (showArrow) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -283,34 +261,33 @@ private fun SettingsActionRow(
 
 @Composable
 private fun SettingsSwitchRow(
-    icon: ImageVector,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+            .padding(horizontal = 22.dp, vertical = 16.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(22.dp),
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
         Switch(
@@ -320,7 +297,26 @@ private fun SettingsSwitchRow(
             colors = SwitchDefaults.colors(
                 checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                 checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-            )
+            ),
+        )
+    }
+}
+
+@Composable
+private fun SettingsMetaLine(
+    label: String,
+    value: String,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -341,7 +337,7 @@ private fun steamTimeStatusText(
 }
 
 private fun formatOffsetSeconds(
-    context: android.content.Context,
+    context: Context,
     offsetSeconds: Long,
 ): String {
     return when {

@@ -183,6 +183,17 @@ fun SteamQrLoginScreen(
         }
         item {
             ScreenSectionCard(
+                title = stringResource(R.string.vault_security_note_title),
+                description = stringResource(R.string.vault_security_note_body),
+            ) {
+                VaultInlineBanner(
+                    text = stringResource(R.string.steam_qr_login_modern_candidate_hint),
+                    tone = VaultBannerTone.Neutral,
+                )
+            }
+        }
+        item {
+            ScreenSectionCard(
                 title = stringResource(R.string.steam_qr_login_challenge_title),
                 description = stringResource(R.string.steam_qr_login_challenge_description),
             ) {
@@ -289,7 +300,7 @@ fun SteamQrLoginScreen(
                 item {
                     ScreenSectionCard(
                         title = stringResource(R.string.steam_qr_login_accounts_title),
-                        description = stringResource(R.string.steam_qr_login_accounts_description),
+                        description = stringResource(R.string.steam_qr_login_modern_candidate_hint),
                     ) {
                         Text(
                             text = stringResource(
@@ -345,49 +356,34 @@ fun SteamQrLoginScreen(
                     description = stringResource(R.string.steam_qr_login_info_description),
                 ) {
                     info.deviceFriendlyName?.let { deviceFriendlyName ->
-                        Text(
-                            text = stringResource(R.string.steam_qr_login_info_device, deviceFriendlyName),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_qr_login_modern_device_label),
+                            value = deviceFriendlyName,
                         )
                     }
                     formatLocation(info)?.let { location ->
-                        Text(
-                            text = stringResource(R.string.steam_qr_login_info_location, location),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_qr_login_modern_location_label),
+                            value = location,
                         )
                     }
                     info.ip?.let { ip ->
-                        Text(
-                            text = stringResource(R.string.steam_qr_login_info_ip, ip),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                        VaultKeyValueRow(
+                            label = stringResource(R.string.steam_qr_login_modern_ip_label),
+                            value = ip,
                         )
                     }
-                    Text(
-                        text = stringResource(
-                            R.string.steam_qr_login_info_platform,
-                            platformLabel(info.platformType),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                    VaultKeyValueRow(
+                        label = stringResource(R.string.steam_qr_login_modern_platform_label),
+                        value = platformLabel(info.platformType),
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.steam_qr_login_info_version,
-                            info.version,
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                    VaultKeyValueRow(
+                        label = stringResource(R.string.steam_qr_login_modern_version_label),
+                        value = info.version.toString(),
                     )
-                    Text(
-                        text = stringResource(
-                            R.string.steam_qr_login_info_client_id,
-                            info.clientId.toString(),
-                        ),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                    VaultKeyValueRow(
+                        label = stringResource(R.string.steam_qr_login_modern_client_id_label),
+                        value = info.clientId.toString(),
                     )
                     if (info.requestorLocationMismatch) {
                         VaultInlineBanner(

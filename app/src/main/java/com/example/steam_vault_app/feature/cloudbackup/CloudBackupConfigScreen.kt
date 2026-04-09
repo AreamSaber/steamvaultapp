@@ -1,8 +1,11 @@
 package com.example.steam_vault_app.feature.cloudbackup
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
@@ -12,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -107,10 +111,6 @@ fun CloudBackupConfigScreen(
                 title = stringResource(R.string.cloud_config_modern_card_title),
                 description = stringResource(R.string.cloud_config_modern_card_body),
             ) {
-                VaultInlineBanner(
-                    text = stringResource(R.string.cloud_config_modern_tip),
-                    tone = VaultBannerTone.Neutral,
-                )
                 VaultTextField(
                     value = serviceUrl,
                     onValueChange = { serviceUrl = it },
@@ -156,73 +156,104 @@ fun CloudBackupConfigScreen(
                         imeAction = ImeAction.Done,
                     ),
                 )
-                VaultPrimaryButton(
-                    text = stringResource(
-                        if (isSaving) {
-                            R.string.cloud_config_modern_action_loading
-                        } else {
-                            R.string.cloud_config_modern_action
+            }
+        }
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.cloud_config_modern_tip),
+                description = stringResource(R.string.cloud_config_modern_status_waiting),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    VaultSecondaryButton(
+                        text = stringResource(R.string.cloud_config_modern_restore_template),
+                        onClick = {
+                            serviceUrl = DEFAULT_JIANGUOYUN_WEBDAV_URL
+                            remotePath = WebDavBackupConfiguration.DEFAULT_REMOTE_PATH
+                            statusMessage = context.getString(R.string.cloud_backup_config_template_restored)
+                            errorMessage = null
                         },
-                    ),
-                    onClick = {
-                        val candidate = WebDavBackupConfiguration(
-                            serverUrl = serviceUrl,
-                            username = username,
-                            appPassword = appPassword,
-                            remotePath = remotePath,
-                        ).normalized()
-                        when {
-                            candidate.serverUrl.isBlank() -> {
-                                errorMessage = context.getString(R.string.cloud_backup_config_validation_service_url_blank)
-                                statusMessage = null
-                            }
-
-                            !candidate.serverUrl.startsWith("https://") -> {
-                                errorMessage = context.getString(R.string.cloud_backup_config_validation_service_url_https)
-                                statusMessage = null
-                            }
-
-                            candidate.username.isBlank() -> {
-                                errorMessage = context.getString(R.string.cloud_backup_config_validation_username_blank)
-                                statusMessage = null
-                            }
-
-                            candidate.appPassword.isBlank() -> {
-                                errorMessage = context.getString(R.string.cloud_backup_config_validation_app_password_blank)
-                                statusMessage = null
-                            }
-
-                            else -> {
-                                scope.launch {
-                                    isSaving = true
-                                    errorMessage = null
-                                    statusMessage = null
-                                    try {
-                                        cloudBackupRepository.saveConfiguration(candidate)
-                                        statusMessage = context.getString(R.string.cloud_backup_config_saved)
-                                        onConfigurationSaved()
-                                    } catch (error: Exception) {
-                                        errorMessage = error.message ?: context.getString(R.string.cloud_backup_config_save_failed)
-                                    } finally {
-                                        isSaving = false
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    enabled = !isLoading && !isSaving,
-                )
+                        enabled = !isLoading && !isSaving,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.cloud_config_modern_status_title),
+                description = stringResource(R.string.cloud_config_modern_status_waiting),
+            ) {
                 VaultSecondaryButton(
-                    text = stringResource(R.string.cloud_config_modern_restore_template),
+                    text = stringResource(R.string.cloud_config_modern_test_action),
                     onClick = {
-                        serviceUrl = DEFAULT_JIANGUOYUN_WEBDAV_URL
-                        remotePath = WebDavBackupConfiguration.DEFAULT_REMOTE_PATH
-                        statusMessage = context.getString(R.string.cloud_backup_config_template_restored)
+                        statusMessage = context.getString(R.string.cloud_config_modern_status_waiting)
                         errorMessage = null
                     },
                     enabled = !isLoading && !isSaving,
                 )
             }
+        }
+        item {
+            VaultPrimaryButton(
+                text = stringResource(
+                    if (isSaving) {
+                        R.string.cloud_config_modern_action_loading
+                    } else {
+                        R.string.cloud_config_modern_action
+                    },
+                ),
+                onClick = {
+                    val candidate = WebDavBackupConfiguration(
+                        serverUrl = serviceUrl,
+                        username = username,
+                        appPassword = appPassword,
+                        remotePath = remotePath,
+                    ).normalized()
+                    when {
+                        candidate.serverUrl.isBlank() -> {
+                            errorMessage = context.getString(R.string.cloud_backup_config_validation_service_url_blank)
+                            statusMessage = null
+                        }
+
+                        !candidate.serverUrl.startsWith("https://") -> {
+                            errorMessage = context.getString(R.string.cloud_backup_config_validation_service_url_https)
+                            statusMessage = null
+                        }
+
+                        candidate.username.isBlank() -> {
+                            errorMessage = context.getString(R.string.cloud_backup_config_validation_username_blank)
+                            statusMessage = null
+                        }
+
+                        candidate.appPassword.isBlank() -> {
+                            errorMessage = context.getString(R.string.cloud_backup_config_validation_app_password_blank)
+                            statusMessage = null
+                        }
+
+                        else -> {
+                            scope.launch {
+                                isSaving = true
+                                errorMessage = null
+                                statusMessage = null
+                                try {
+                                    cloudBackupRepository.saveConfiguration(candidate)
+                                    statusMessage = context.getString(R.string.cloud_backup_config_saved)
+                                    onConfigurationSaved()
+                                } catch (error: Exception) {
+                                    errorMessage = error.message ?: context.getString(R.string.cloud_backup_config_save_failed)
+                                } finally {
+                                    isSaving = false
+                                }
+                            }
+                        }
+                    }
+                },
+                enabled = !isLoading && !isSaving,
+            )
         }
     }
 }

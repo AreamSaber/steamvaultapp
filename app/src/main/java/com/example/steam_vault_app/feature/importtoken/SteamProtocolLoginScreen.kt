@@ -253,6 +253,17 @@ fun SteamProtocolLoginScreen(
                 )
             }
         }
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.steam_protocol_login_modern_steps_title),
+                description = stringResource(R.string.steam_protocol_login_modern_steps_body),
+            ) {
+                VaultInlineBanner(
+                    text = stringResource(R.string.vault_security_note_body),
+                    tone = VaultBannerTone.Neutral,
+                )
+            }
+        }
 
         item {
             ScreenSectionCard(

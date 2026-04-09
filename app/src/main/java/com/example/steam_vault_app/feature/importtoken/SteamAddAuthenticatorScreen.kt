@@ -159,6 +159,20 @@ fun SteamAddAuthenticatorScreen(
         item {
             VaultProgressSteps(steps = progressSteps)
         }
+        item {
+            ScreenSectionCard(
+                title = stringResource(R.string.vault_security_note_title),
+                description = stringResource(R.string.vault_security_note_body),
+            ) {
+                ChecklistRow(
+                    label = stringResource(R.string.steam_add_authenticator_browser_description),
+                    highlighted = true,
+                )
+                ChecklistRow(
+                    label = stringResource(R.string.steam_add_authenticator_saved_draft_description),
+                )
+            }
+        }
         statusMessage?.let { message ->
             item {
                 VaultInlineBanner(

@@ -1,10 +1,16 @@
 package com.example.steam_vault_app.feature.cloudbackup
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -137,15 +143,15 @@ fun CloudBackupStatusScreen(
                         },
                     ) {
                         configuration?.let {
-                            CloudBackupLabelValue(
+                            StatusValueLine(
                                 label = stringResource(R.string.cloud_config_modern_url),
                                 value = it.serverUrl,
                             )
-                            CloudBackupLabelValue(
+                            StatusValueLine(
                                 label = stringResource(R.string.cloud_config_modern_username),
                                 value = it.username,
                             )
-                            CloudBackupLabelValue(
+                            StatusValueLine(
                                 label = stringResource(R.string.cloud_config_modern_path),
                                 value = it.remotePath,
                             )
@@ -158,15 +164,30 @@ fun CloudBackupStatusScreen(
                 }
                 item {
                     ScreenSectionCard(
+                        title = stringResource(R.string.cloud_status_modern_storage_title),
+                        description = stringResource(R.string.cloud_status_modern_storage_body),
+                    ) {
+                        StatusValueLine(
+                            label = stringResource(R.string.cloud_status_modern_last_sync_label),
+                            value = status.lastUploadAt ?: stringResource(R.string.cloud_backup_status_last_upload_none),
+                        )
+                        StatusValueLine(
+                            label = stringResource(R.string.cloud_status_modern_versions_title),
+                            value = remoteVersions.size.toString(),
+                        )
+                    }
+                }
+                item {
+                    ScreenSectionCard(
                         title = stringResource(R.string.cloud_status_modern_recent_title),
                         description = stringResource(R.string.cloud_status_modern_recent_body),
                     ) {
-                        CloudBackupLabelValue(
-                            label = stringResource(R.string.cloud_backup_status_last_upload_none),
+                        StatusValueLine(
+                            label = stringResource(R.string.cloud_status_modern_recent_upload_label),
                             value = status.lastUploadAt ?: stringResource(R.string.cloud_backup_status_last_upload_none),
                         )
-                        CloudBackupLabelValue(
-                            label = stringResource(R.string.cloud_backup_status_last_download_none),
+                        StatusValueLine(
+                            label = stringResource(R.string.cloud_status_modern_recent_restore_label),
                             value = status.lastDownloadAt ?: stringResource(R.string.cloud_backup_status_last_download_none),
                         )
                         status.lastErrorMessage?.let { message ->
@@ -182,15 +203,15 @@ fun CloudBackupStatusScreen(
                         title = stringResource(R.string.cloud_status_modern_auto_title),
                         description = stringResource(R.string.cloud_status_modern_auto_body),
                     ) {
-                        CloudBackupLabelValue(
+                        StatusValueLine(
                             label = stringResource(R.string.cloud_backup_status_auto_state_label),
                             value = automaticBackupStateDescription(context, status.autoBackupState),
                         )
-                        CloudBackupLabelValue(
+                        StatusValueLine(
                             label = stringResource(R.string.cloud_backup_status_auto_reason_label),
                             value = automaticBackupReasonDescription(context, status.autoBackupReason),
                         )
-                        CloudBackupLabelValue(
+                        StatusValueLine(
                             label = stringResource(R.string.cloud_backup_status_auto_next_run_label),
                             value = status.autoBackupNextRunAt
                                 ?: stringResource(R.string.cloud_backup_status_auto_next_run_at_none),
@@ -203,49 +224,44 @@ fun CloudBackupStatusScreen(
                         description = if (remoteVersions.isEmpty()) {
                             stringResource(R.string.cloud_status_modern_versions_empty)
                         } else {
-                            stringResource(R.string.cloud_backup_status_versions_count, remoteVersions.size)
+                            stringResource(R.string.cloud_status_modern_manage_history)
                         },
                     ) {
                         if (remoteVersions.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.cloud_status_modern_versions_empty),
-                                style = MaterialTheme.typography.bodySmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         } else {
-                            remoteVersions.forEach { version ->
-                                ScreenSectionCard(
-                                    title = version.uploadedAt
-                                        ?: stringResource(R.string.cloud_backup_status_version_uploaded_at_unknown),
-                                    description = version.remotePath,
-                                ) {
-                                    VaultSecondaryButton(
-                                        text = stringResource(R.string.cloud_backup_status_restore_version_action),
-                                        onClick = {
-                                            scope.launch {
-                                                isWorking = true
-                                                actionError = null
-                                                actionMessage = null
-                                                try {
-                                                    cloudBackupSyncManager.restoreBackup(version)
-                                                    actionMessage = context.getString(
-                                                        R.string.cloud_backup_status_restore_version_success,
-                                                        version.uploadedAt
-                                                            ?: context.getString(R.string.cloud_backup_status_version_uploaded_at_unknown),
-                                                    )
-                                                    refreshVersion += 1
-                                                    onCloudBackupRestored()
-                                                } catch (error: Exception) {
-                                                    actionError = error.message
-                                                        ?: context.getString(R.string.cloud_backup_status_restore_version_failed)
-                                                } finally {
-                                                    isWorking = false
-                                                }
+                            remoteVersions.forEachIndexed { index, version ->
+                                CloudVersionCard(
+                                    version = version,
+                                    latest = index == 0,
+                                    isWorking = isWorking,
+                                    onRestore = {
+                                        scope.launch {
+                                            isWorking = true
+                                            actionError = null
+                                            actionMessage = null
+                                            try {
+                                                cloudBackupSyncManager.restoreBackup(version)
+                                                actionMessage = context.getString(
+                                                    R.string.cloud_backup_status_restore_version_success,
+                                                    version.uploadedAt
+                                                        ?: context.getString(R.string.cloud_backup_status_version_uploaded_at_unknown),
+                                                )
+                                                refreshVersion += 1
+                                                onCloudBackupRestored()
+                                            } catch (error: Exception) {
+                                                actionError = error.message
+                                                    ?: context.getString(R.string.cloud_backup_status_restore_version_failed)
+                                            } finally {
+                                                isWorking = false
                                             }
-                                        },
-                                        enabled = !isWorking,
-                                    )
-                                }
+                                        }
+                                    },
+                                )
                             }
                         }
                     }
@@ -306,6 +322,12 @@ fun CloudBackupStatusScreen(
                         )
                     }
                 }
+                item {
+                    ScreenSectionCard(
+                        title = stringResource(R.string.cloud_status_modern_security_title),
+                        description = stringResource(R.string.cloud_status_modern_security_body),
+                    ) {}
+                }
             }
 
             AppUiState.Empty -> Unit
@@ -320,19 +342,81 @@ private data class CloudBackupStatusPageState(
 )
 
 @Composable
-private fun CloudBackupLabelValue(
+private fun StatusValueLine(
     label: String,
     value: String,
 ) {
-    Text(
-        text = "$label  $value",
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurface,
-    )
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Composable
+private fun CloudVersionCard(
+    version: CloudBackupRemoteVersion,
+    latest: Boolean,
+    isWorking: Boolean,
+    onRestore: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        text = version.fileName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = version.uploadedAt
+                            ?: stringResource(R.string.cloud_backup_status_version_uploaded_at_unknown),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (latest) {
+                    Text(
+                        text = stringResource(R.string.cloud_status_modern_versions_latest),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+            Text(
+                text = version.remotePath,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            VaultSecondaryButton(
+                text = stringResource(R.string.cloud_backup_status_restore_version_action),
+                onClick = onRestore,
+                enabled = !isWorking,
+            )
+        }
+    }
 }
 
 private fun automaticBackupStateDescription(
-    context: android.content.Context,
+    context: Context,
     autoBackupState: CloudBackupAutoBackupState,
 ): String {
     return when (autoBackupState) {
@@ -348,36 +432,31 @@ private fun automaticBackupStateDescription(
 }
 
 private fun automaticBackupReasonDescription(
-    context: android.content.Context,
+    context: Context,
     autoBackupReason: CloudBackupAutoBackupReason?,
 ): String {
     return when (autoBackupReason) {
         CloudBackupAutoBackupReason.VAULT_CONTENT_CHANGED -> {
             context.getString(R.string.cloud_backup_auto_reason_vault_content_changed)
         }
-
         CloudBackupAutoBackupReason.SECURITY_SETTINGS_CHANGED -> {
             context.getString(R.string.cloud_backup_auto_reason_security_settings_changed)
         }
-
         CloudBackupAutoBackupReason.CONFIGURATION_CHANGED -> {
             context.getString(R.string.cloud_backup_auto_reason_configuration_changed)
         }
-
         CloudBackupAutoBackupReason.MASTER_PASSWORD_CHANGED -> {
             context.getString(R.string.cloud_backup_auto_reason_master_password_changed)
         }
-
         CloudBackupAutoBackupReason.MANUAL_RESTORE -> {
             context.getString(R.string.cloud_backup_auto_reason_manual_restore)
         }
-
         null -> context.getString(R.string.cloud_backup_status_auto_reason_none)
     }
 }
 
 private fun syncStateDescription(
-    context: android.content.Context,
+    context: Context,
     syncState: CloudBackupSyncState,
 ): String {
     return when (syncState) {

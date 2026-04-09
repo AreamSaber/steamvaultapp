@@ -3,6 +3,7 @@ package com.example.steam_vault_app.feature.importtoken
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -53,9 +54,9 @@ fun ImportTokenScreen(
     val scaffoldJson = entryContext?.let(ImportTokenScaffoldFactory::buildExistingAuthenticatorJson)
 
     LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(18.dp),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
             VaultPageHeader(
@@ -175,9 +176,7 @@ fun ImportTokenScreen(
         }
 
         item {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 VaultSecondaryButton(
                     text = stringResource(R.string.import_modern_browser_fallback),
                     onClick = onOpenSteamBrowserLogin,
